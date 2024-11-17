@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +15,10 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
+    $response = Http::get("https://api.hh.ru/employers/333");
+    if ($response->successful()) {
+        $data = $response->json();
+        dd($data);
+    }
     return view('welcome');
 });
