@@ -16,9 +16,12 @@ RUN apt-get update && apt-get install -y \
       apt-get clean && \
       rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install Xdebug
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
 COPY ./_docker/app/php.ini /usr/local/etc/php/conf.d/php.ini
 
-ENV COMPOSER_ALLOW_SUPERUSER = 1
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

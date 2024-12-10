@@ -19,6 +19,8 @@ services:
             dockerfile: _docker/app/Dockerfile
         volumes:
             - ./:/var/www/
+        environment:
+            PHP_IDE_CONFIG: "serverName=server"
         depends_on:
             - db
         container_name: job_finder_app
