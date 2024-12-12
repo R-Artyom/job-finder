@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('vacancies', function (Blueprint $table) {
             // Атрибуты
             $table->unsignedBigInteger('id')->comment('Вакансия')->primary();
-            $table->string('name', 120)->nullable()->comment('Название');
+            $table->string('name', 150)->nullable()->comment('Название');
             $table->unsignedInteger('area_id')->nullable()->comment('Регион');
 //            $table->string('alternate_url', 100)->nullable()->comment('Ссылка');
             $table->string('description', 100)->nullable()->comment('Описание');

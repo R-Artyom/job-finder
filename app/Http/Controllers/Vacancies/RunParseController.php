@@ -30,7 +30,7 @@ class RunParseController extends Controller
                 // Создание транзакции
                 DB::beginTransaction();
 
-                if ($vacancyId < 200) {
+                if ($vacancyId < $counter->limit) {
                     // Если ещё нет такой вакансии
                     if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                         // Запрос данных о вакансии

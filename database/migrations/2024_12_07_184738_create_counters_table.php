@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('counters', function (Blueprint $table) {
             // Атрибуты
-//            $table->unsignedBigInteger('id')->comment('Счетчик')->primary();
             $table->id();
             $table->string('name', 100)->comment('Название');
             $table->unsignedBigInteger('value')->default(1)->comment('Значение');
+            $table->unsignedBigInteger('limit')->default(500)->comment('Максимальное значение счетчика');
             $table->string('status', 100)->default('run')->comment('Статус');
             $table->timestamp('created_at')->nullable()->comment('Создано');
             $table->timestamp('updated_at')->nullable()->comment('Обновлено');
-//            // Уникальные индексы
-//            $table->unique('id');
         });
     }
 
