@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Controllers\Employers\IndexController;
+use App\Http\Controllers\Employers\ShowController;
+use App\Http\Controllers\Vacancies\IndexController as VacanciesIndexController;
+use App\Http\Controllers\Vacancies\RunParseController as VacanciesRunParseController;
+use App\Http\Controllers\Vacancies\ShowController as VacanciesShowController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,11 +18,14 @@ use Illuminate\Support\Facades\Http;
 |
 */
 
+// Работодатели
+Route::get('/employers', [IndexController::class, '__invoke'])->name('employers.index');
+
+// Вакансии
+Route::get('/vacancies', [VacanciesIndexController::class, '__invoke'])->name('vacancies.index');
+Route::get('/vacancies/run', [VacanciesRunParseController::class, '__invoke'])->name('vacancies.run');
+
+// Главная
 Route::get('/', function () {
-    $response = Http::get("https://api.hh.ru/employers/333");
-    if ($response->successful()) {
-        $data = $response->json();
-        dd($data);
-    }
     return view('welcome');
 });
