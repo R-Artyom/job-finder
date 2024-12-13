@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('vacancies', function (Blueprint $table) {
-            // Увеличение длины до 200 символов
-            $table->string('name', 200)->nullable()->comment('Название')->change();
+        Schema::table('employers', function (Blueprint $table) {
+            // Увеличение длины до 150 символов
+            $table->string('name', 150)->nullable()->comment('Название')->change();
         });
     }
 
@@ -22,9 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('vacancies', function (Blueprint $table) {
+        Schema::table('employers', function (Blueprint $table) {
             // Возврат старого значения длины
-            $table->string('name', 150)->nullable()->comment('Название')->change();
+            $table->string('name', 100)->nullable()->comment('Название')->change();
         });
     }
 };
