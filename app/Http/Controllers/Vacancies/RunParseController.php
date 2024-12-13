@@ -57,7 +57,8 @@ class RunParseController extends Controller
                         }
                     }
                     // Инкремент счетчика с сохранением в базе
-                    $counter->update(['value' => $vacancyId++]);
+                    $vacancyId++;
+                    $counter->update(['value' => $vacancyId]);
                 }
 
                 // Фиксирование транзакции
