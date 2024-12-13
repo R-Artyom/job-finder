@@ -39,7 +39,7 @@ class RunParseController extends Controller
                             $vacancyData = $response->json();
                             // Если работодатель указан, то сначала надо записать данные о нём
                             if (!empty($vacancyData['employer']['id'])) {
-                                // Если не существует такого работодателя
+                                // Если не существует такого работодателя в базе MySql
                                 if (!Employer::query()->where('id', $vacancyData['employer']['id'])->exists()) {
                                     $response = Http::get("https://api.hh.ru/employers/{$vacancyData['employer']['id']}");
                                     $data = $response->json();
@@ -68,6 +68,7 @@ class RunParseController extends Controller
                 DB::rollBack();
                 $counter->update(['status' => 'error']);
                 // Логирование в файл
+                logger('---');
                 logger(route('vacancies.run'),
                     [
                         'vacancyId' => $vacancyId,
