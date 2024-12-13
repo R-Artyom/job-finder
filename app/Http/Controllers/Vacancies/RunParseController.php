@@ -31,23 +31,24 @@ class RunParseController extends Controller
                 DB::beginTransaction();
 
                 if ($vacancyId < $counter->limit) {
-                    // Если ещё нет такой вакансии
+                    // Если ещё нет такой вакансии в базе MySql
                     if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                         // Запрос данных о вакансии
                         $response = Http::get("https://api.hh.ru/vacancies/$vacancyId");
                         if ($response->successful()) {
                             $vacancyData = $response->json();
+                            $employerId = $vacancyData['employer']['id'];
                             // Если работодатель указан, то сначала надо записать данные о нём
-                            if (!empty($vacancyData['employer']['id'])) {
+                            if (!empty($employerId)) {
                                 // Если не существует такого работодателя в базе MySql
-                                if (!Employer::query()->where('id', $vacancyData['employer']['id'])->exists()) {
-                                    $response = Http::get("https://api.hh.ru/employers/{$vacancyData['employer']['id']}");
+                                if (!Employer::query()->where('id', $employerId)->exists()) {
+                                    $response = Http::get("https://api.hh.ru/employers/{$employerId}");
                                     $data = $response->json();
                                     if ($response->successful()) {
                                         (new EmployersStoreController)($data);
                                     } else {
                                         // Если в базе hh нет такого работодателя, то пустая запись
-                                        (new EmployersStoreController)(['id' => $vacancyData['employer']['id']]);
+                                        (new EmployersStoreController)(['id' => $employerId]);
                                     }
                                 }
                             }
@@ -56,13 +57,13 @@ class RunParseController extends Controller
                         }
                     }
                     // Инкремент счетчика с сохранением в базе
-                    $counter->increment('value');
+                    $counter->update(['value' => $vacancyId++]);
                 }
 
                 // Фиксирование транзакции
                 DB::commit();
 
-                // Блок перехвата исключений
+            // Блок перехвата исключений
             } catch (\Exception $e) {
                 // Откат транзакции
                 DB::rollBack();
