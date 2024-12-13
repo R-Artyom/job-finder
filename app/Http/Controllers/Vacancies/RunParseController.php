@@ -25,6 +25,10 @@ class RunParseController extends Controller
         $vacancyId = $counter->value;
 
         if ($counter->status === 'run') {
+            // Счетчик занят
+            $counter->status = 'busy';
+            $counter->update(['value' => $vacancyId]);
+
             // Блок для выброса исключений
             try {
                 // Создание транзакции
@@ -66,6 +70,10 @@ class RunParseController extends Controller
                     $vacancyId++;
                     $counter->update(['value' => $vacancyId]);
                 }
+
+                // Счетчик свободен
+                $counter->status = 'run';
+                $counter->update(['value' => $vacancyId]);
 
                 // Фиксирование транзакции
                 DB::commit();
