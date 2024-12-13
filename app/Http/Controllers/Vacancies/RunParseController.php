@@ -37,21 +37,27 @@ class RunParseController extends Controller
                         $response = Http::get("https://api.hh.ru/vacancies/$vacancyId");
                         if ($response->successful()) {
                             $vacancyData = $response->json();
-                            $employerId = $vacancyData['employer']['id'];
-                            // Если работодатель указан, то сначала надо записать данные о нём
-                            if (!empty($employerId)) {
-                                // Если не существует такого работодателя в базе MySql
-                                if (!Employer::query()->where('id', $employerId)->exists()) {
-                                    $response = Http::get("https://api.hh.ru/employers/{$employerId}");
-                                    $data = $response->json();
-                                    if ($response->successful()) {
-                                        (new EmployersStoreController)($data);
-                                    } else {
-                                        // Если в базе hh нет такого работодателя, то пустая запись
-                                        (new EmployersStoreController)(['id' => $employerId]);
+                            // Если есть ссылка на работодателя
+                            if (isset($vacancyData['employer']['id'])) {
+                                $employerId = $vacancyData['employer']['id'];
+                                // Если работодатель указан, то сначала надо записать данные о нём
+                                if (!empty($employerId)) {
+                                    // Если не существует такого работодателя в базе MySql
+                                    if (!Employer::query()->where('id', $employerId)->exists()) {
+                                        $response = Http::get("https://api.hh.ru/employers/{$employerId}");
+                                        $data = $response->json();
+                                        if ($response->successful()) {
+                                            (new EmployersStoreController)($data);
+                                        } else {
+                                            // Если в базе hh нет такого работодателя, то пустая запись
+                                            (new EmployersStoreController)(['id' => $employerId]);
+                                        }
                                     }
                                 }
+                            } else {
+                                $vacancyData['employer']['id'] = null;
                             }
+
                             // Запись данных о вакансии
                             (new StoreController)($vacancyData);
                         }
