@@ -13,7 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Запуск парсинга вакансии
-        $schedule->command('parse-vacancy:run')->everySecond();
+        $schedule->command('parse-vacancy:run')->everyMinute();
     }
 
     /**
