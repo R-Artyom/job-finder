@@ -7,6 +7,7 @@ use App\Http\Controllers\Employers\StoreController as EmployersStoreController;
 use App\Models\Counter;
 use App\Models\Employer;
 use App\Models\Vacancy;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 
@@ -79,13 +80,25 @@ class RunParseController extends Controller
                 DB::commit();
 
             // Блок перехвата исключений
+            } catch (ConnectionException $e) {
+                // Откат транзакции
+                DB::rollBack();
+                // Счетчик свободен
+                $counter->status = 'run';
+                $counter->update(['value' => $vacancyId]);
+                logger()->error('Ошибка соединения ' . '(' . route('vacancies.run') . ')',
+                    [
+                        'vacancyId' => $vacancyId,
+                        'message' => $e->getMessage()
+                    ]
+                );
+            // Общая ошибка
             } catch (\Exception $e) {
                 // Откат транзакции
                 DB::rollBack();
                 $counter->update(['status' => 'error']);
                 // Логирование в файл
-                logger('---');
-                logger(route('vacancies.run'),
+                logger()->error('Ошибка общая ' . '(' . route('vacancies.run') . ')',
                     [
                         'vacancyId' => $vacancyId,
                         'error' => $e->getMessage(),
