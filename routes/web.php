@@ -20,10 +20,12 @@ use Illuminate\Support\Facades\Route;
 
 // Работодатели
 Route::get('/employers', [IndexController::class, '__invoke'])->name('employers.index');
+Route::get('/employers/{employer}', [ShowController::class, '__invoke'])->name('employers.show');
 
 // Вакансии
 Route::get('/vacancies', [VacanciesIndexController::class, '__invoke'])->name('vacancies.index');
 Route::get('/vacancies/run', [VacanciesRunParseController::class, '__invoke'])->name('vacancies.run');
+Route::get('/vacancies/{vacancy}', [VacanciesShowController::class, '__invoke'])->name('vacancies.show');
 
 // Главная
 Route::get('/', function () {
