@@ -131,4 +131,7 @@ return [
         ],
     ],
 
+    // Email для уведомлений по умолчанию
+    'default_notification_email' => env('DEFAULT_NOTIFICATION_EMAIL'),
+
 ];

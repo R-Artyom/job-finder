@@ -102,6 +102,7 @@ class RunParseController extends Controller
                             'message' => $e->getMessage()
                         ]
                     );
+                    $EmailNotifications[] = ['Ошибка соединения ' . '(' . route('vacancies.run') . ')', $e->getMessage()];
                 } catch (\Exception $e) {
                     // Откат транзакции
                     DB::rollBack();
@@ -113,7 +114,14 @@ class RunParseController extends Controller
                             'error' => $e->getMessage(),
                         ]
                     );
+                    $EmailNotifications[] = ['Ошибка общая ' . '(' . route('vacancies.run') . ')', $e->getMessage()];
                     return;
+
+                } finally {
+                    // Каждые 100000 отчёт
+                    if ($vacancyId % 100000 === 0) {
+                        $EmailNotifications[] = ['Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                    }
                 }
 
                 // Фиксировать отметку времени
@@ -123,10 +131,18 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
+                $EmailNotifications[] = ['Ошибка времени выполнения', 'Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')'];
             }
             // Счетчик свободен
             $counter->status = 'run';
             $counter->update(['value' => $vacancyId]);
+
+            // Отправка уведомлений
+            if (isset($EmailNotifications)) {
+                foreach ($EmailNotifications as $EmailNotification) {
+                    $this->sendEmailNotify($EmailNotification);
+                }
+            }
         }
     }
 }
