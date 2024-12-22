@@ -102,7 +102,7 @@ class RunParseController extends Controller
                             'message' => $e->getMessage()
                         ]
                     );
-                    $EmailNotifications[] = ['Ошибка соединения ' . '(' . route('vacancies.run') . ')', $e->getMessage()];
+                    $EmailNotifications[] = ['Отчёт', $e->getMessage()];
                 } catch (\Exception $e) {
                     // Откат транзакции
                     DB::rollBack();
@@ -114,7 +114,7 @@ class RunParseController extends Controller
                             'error' => $e->getMessage(),
                         ]
                     );
-                    $EmailNotifications[] = ['Ошибка общая ' . '(' . route('vacancies.run') . ')', $e->getMessage()];
+                    $EmailNotifications[] = ['Отчёт', $e->getMessage()];
                     return;
 
                 } finally {
@@ -131,7 +131,7 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $EmailNotifications[] = ['Ошибка времени выполнения', 'Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')'];
+                $EmailNotifications[] = ['Отчёт', 'Время выполнения скрипта более 60 секунд'];
             }
             // Счетчик свободен
             $counter->status = 'run';
