@@ -102,7 +102,7 @@ class RunParseController extends Controller
                             'message' => $e->getMessage()
                         ]
                     );
-                    $EmailNotifications[] = ['Отчёт', $e->getMessage()];
+                    $notifications[] = ['Отчёт', $e->getMessage()];
                 } catch (\Exception $e) {
                     // Откат транзакции
                     DB::rollBack();
@@ -114,13 +114,13 @@ class RunParseController extends Controller
                             'error' => $e->getMessage(),
                         ]
                     );
-                    $EmailNotifications[] = ['Отчёт', $e->getMessage()];
+                    $notifications[] = ['Отчёт', $e->getMessage()];
                     return;
 
                 } finally {
                     // Каждые 100000 отчёт
                     if ($vacancyId % 100000 === 0) {
-                        $EmailNotifications[] = ['Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                        $notifications[] = ['Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
                     }
                 }
 
@@ -131,16 +131,17 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $EmailNotifications[] = ['Отчёт', 'Время выполнения скрипта более 60 секунд'];
+                $notifications[] = ['Отчёт', 'Время выполнения скрипта более 60 секунд'];
             }
             // Счетчик свободен
             $counter->status = 'run';
             $counter->update(['value' => $vacancyId]);
 
             // Отправка уведомлений
-            if (isset($EmailNotifications)) {
-                foreach ($EmailNotifications as $EmailNotification) {
-                    $this->sendEmailNotify($EmailNotification);
+            if (isset($notifications)) {
+                foreach ($notifications as $notification) {
+                    $this->sendEmailNotify($notification);
+                    $this->sendTelegramNotify($notification);
                 }
             }
         }

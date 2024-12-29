@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Mail;
+use Telegram\Bot\Laravel\Facades\Telegram;
 
 class Controller extends BaseController
 {
@@ -36,6 +37,34 @@ class Controller extends BaseController
             } elseif (config('mail.default_notification_email') !== null) {
                 Mail::to(config('mail.default_notification_email'))->send(new Notify($data));
             }
+        }
+    }
+
+    /**
+     * Отправка уведомления в телеграм
+     *
+     * @param array $notifyData тема уведомления (первый элемент массива) + текст уведомления (всё остальное, каждый элемент - новая строка)
+     * @return void
+     */
+    public function sendTelegramNotify(array $notifyData): void
+    {
+        // Отправка уведомлений, если разрешено
+        if (config('enable.telegramNotifications') === true) {
+            // * Сборка уведомления
+            $isEmpty = empty($notifyData);
+            if (!$isEmpty) {
+                foreach ($notifyData as $key => $value) {
+                    $notifyData[$key] = array_key_first($notifyData) === $key ? '⚪️ ' . $value . ' [' . env('APP_NAME', 'laravel') . ']' : $key . ') ' . $value;
+                }
+            }
+            $notifyData = $isEmpty ? 'Тело уведомления отсутствует' : implode(PHP_EOL, $notifyData);
+
+            // * Отправка уведомления
+            Telegram::sendMessage([
+                'chat_id' => env('TELEGRAM_CHANNEL_ID', ''),
+                'parse_mode' => 'html',
+                'text' => $notifyData,
+            ]);
         }
     }
 }
