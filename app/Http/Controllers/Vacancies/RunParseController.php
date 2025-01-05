@@ -115,7 +115,7 @@ class RunParseController extends Controller
                         ]
                     );
                     $notifications[] = ['Отчёт', $e->getMessage()];
-                    return;
+                    break;
 
                 } finally {
                     // Каждые 100000 отчёт
@@ -133,9 +133,12 @@ class RunParseController extends Controller
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
                 $notifications[] = ['Отчёт', 'Время выполнения скрипта более 60 секунд'];
             }
-            // Счетчик свободен
-            $counter->status = 'run';
-            $counter->update(['value' => $vacancyId]);
+
+            // Счетчик свободен, если не было ошибок
+            if ($counter->status !== 'error') {
+                $counter->status = 'run';
+                $counter->update(['value' => $vacancyId]);
+            }
 
             // Отправка уведомлений
             if (isset($notifications)) {
