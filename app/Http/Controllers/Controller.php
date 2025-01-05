@@ -54,7 +54,7 @@ class Controller extends BaseController
             $isEmpty = empty($notifyData);
             if (!$isEmpty) {
                 foreach ($notifyData as $key => $value) {
-                    $notifyData[$key] = array_key_first($notifyData) === $key ? '⚪️ ' . $value . ' [' . env('APP_NAME', 'laravel') . ']' : $key . ') ' . $value;
+                    $notifyData[$key] = array_key_first($notifyData) === $key ? $value . ' [' . env('APP_NAME', 'laravel') . ']' : $key . ') ' . $value;
                 }
             }
             $notifyData = $isEmpty ? 'Тело уведомления отсутствует' : implode(PHP_EOL, $notifyData);

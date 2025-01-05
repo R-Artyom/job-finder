@@ -96,31 +96,31 @@ class RunParseController extends Controller
                 } catch (ConnectionException $e) {
                     // Откат транзакции
                     DB::rollBack();
-                    logger()->error('Ошибка соединения ' . '(' . route('vacancies.run') . ')',
+                    logger()->error('🟡 Ошибка соединения ' . '(' . route('vacancies.run') . ')',
                         [
                             'vacancyId' => $vacancyId,
                             'message' => $e->getMessage()
                         ]
                     );
-                    $notifications[] = ['Отчёт', $e->getMessage()];
+                    $notifications[] = ['🟡 Ошибка соединения', $e->getMessage()];
                 } catch (\Exception $e) {
                     // Откат транзакции
                     DB::rollBack();
                     $counter->update(['status' => 'error']);
                     // Логирование в файл
-                    logger()->error('Ошибка общая ' . '(' . route('vacancies.run') . ')',
+                    logger()->error('🔴 Ошибка общая ' . '(' . route('vacancies.run') . ')',
                         [
                             'vacancyId' => $vacancyId,
                             'error' => $e->getMessage(),
                         ]
                     );
-                    $notifications[] = ['Отчёт', $e->getMessage()];
+                    $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
                     break;
 
                 } finally {
                     // Каждые 100000 отчёт
                     if ($vacancyId % 100000 === 0) {
-                        $notifications[] = ['Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
                     }
                 }
 
@@ -131,7 +131,7 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $notifications[] = ['Отчёт', 'Время выполнения скрипта более 60 секунд'];
+                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд'];
             }
 
             // Счетчик свободен, если не было ошибок
