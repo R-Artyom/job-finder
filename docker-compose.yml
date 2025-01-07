@@ -7,7 +7,7 @@ services:
             - ./:/var/www/
             - ./_docker/nginx/conf.d/:/etc/nginx/conf.d/
         ports:
-            - "8080:80"
+            - "443:80"
         depends_on:
             - app
         container_name: job_finder_nginx
