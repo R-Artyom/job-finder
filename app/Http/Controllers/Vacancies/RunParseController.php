@@ -129,9 +129,10 @@ class RunParseController extends Controller
             }
             // Если скрипт выполнялся дольше минуты
             if ($fixedTime - $startTime > 60) {
+                $scryptTime = $fixedTime - $startTime;
                 // Логирование в файл
-                logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд', "vacancyId = $vacancyId"];
+                logger()->error("Время выполнения скрипта $scryptTime сек " . '(' . route('vacancies.run') . ')');
+                $notifications[] = ['⚪️ Отчёт', "Время выполнения скрипта $scryptTime сек", "vacancyId = $vacancyId"];
             }
 
             // Счетчик свободен, если не было ошибок
