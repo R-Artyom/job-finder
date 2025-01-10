@@ -37,8 +37,8 @@ class RunParseController extends Controller
 
             // Повторять считывание вакансий в течение 57 сек
             while ($fixedTime - $startTime < 57) {
-                // Задержка от 10 мс до 100 мс
-                usleep(rand(10000, 100000));
+                // Задержка от 10 мс до 50 мс
+                usleep(rand(10000, 50000));
 
                 // Блок для выброса исключений
                 try {
@@ -131,7 +131,7 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд'];
+                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд', 'vacancyId' => $vacancyId];
             }
 
             // Счетчик свободен, если не было ошибок
