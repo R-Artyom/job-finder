@@ -131,7 +131,7 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 // Логирование в файл
                 logger()->error('Время выполнения скрипта > 60 сек ' . '(' . route('vacancies.run') . ')');
-                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд', 'vacancyId' => $vacancyId];
+                $notifications[] = ['⚪️ Отчёт', 'Время выполнения скрипта более 60 секунд', "vacancyId = $vacancyId"];
             }
 
             // Счетчик свободен, если не было ошибок
