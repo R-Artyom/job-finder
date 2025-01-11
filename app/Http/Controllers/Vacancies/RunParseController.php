@@ -35,8 +35,8 @@ class RunParseController extends Controller
             // Промежуточная отметка времени
             $fixedTime = microtime(true);
 
-            // Повторять считывание вакансий в течение 57 сек
-            while ($fixedTime - $startTime < 57) {
+            // Повторять считывание вакансий в течение 55 сек
+            while ($fixedTime - $startTime < 55) {
                 // Задержка от 10 мс до 50 мс
                 usleep(rand(10000, 50000));
 
