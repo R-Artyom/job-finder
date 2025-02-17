@@ -37,8 +37,8 @@ class RunParseController extends Controller
 
             // Повторять считывание вакансий в течение 55 сек
             while ($fixedTime - $startTime < 55) {
-                // Задержка от 10 мс до 50 мс
-                usleep(rand(10000, 50000));
+                // Задержка от 30 мс до 70 мс
+                usleep(rand(30000, 70000));
 
                 // Блок для выброса исключений
                 try {
