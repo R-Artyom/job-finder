@@ -18,6 +18,9 @@ services:
         build:
             context: .
             dockerfile: _docker/app/Dockerfile
+            args:
+                UID: "${UID}"
+                GID: "${GID}"
         volumes:
             - ./:/var/www/
         environment:

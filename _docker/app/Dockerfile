@@ -1,6 +1,8 @@
 FROM php:8.2-fpm
 
-WORKDIR /var/www
+ENV APP_PATH=/var/www
+
+WORKDIR $APP_PATH
 
 RUN apt-get update && apt-get install -y \
       apt-utils \
@@ -32,3 +34,15 @@ RUN curl -sL https://deb.nodesource.com/setup_18.x | bash && \
 
 # Install pkill
 RUN apt-get update && apt-get install -y procps
+
+# Добавить переменные UID/GID и их значения по умолчанию (когда они не указаны в docker-compose.yml)
+ARG UID=1000
+ARG GID=1000
+# Создать новую группу с заданным GID
+# Создать пользователя с заданным UID, входящего в эту группу, а также домашнюю директорию (/home/appuser) и оболочку по умолчанию (bash).
+# Установить права на рабочую директорию
+RUN groupadd -g ${GID} appgroup && \
+    useradd -u ${UID} -g ${GID} -ms /bin/bash appuser && \
+    chown -R appuser:appgroup $APP_PATH
+# Переключиться на непривилегированного пользователя
+USER appuser
