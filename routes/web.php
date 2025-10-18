@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Employers\IndexController;
 use App\Http\Controllers\Employers\ShowController;
-use App\Http\Controllers\Vacancies\IndexController as VacanciesIndexController;
 use App\Http\Controllers\Vacancies\RunParseController as VacanciesRunParseController;
 use App\Http\Controllers\Vacancies\ShowController as VacanciesShowController;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +22,6 @@ Route::get('/employers', [IndexController::class, '__invoke'])->name('employers.
 Route::get('/employers/{employer}', [ShowController::class, '__invoke'])->name('employers.show');
 
 // Вакансии
-Route::get('/vacancies', [VacanciesIndexController::class, '__invoke'])->name('vacancies.index');
 Route::get('/vacancies/run', [VacanciesRunParseController::class, '__invoke'])->name('vacancies.run');
 Route::get('/vacancies/{vacancy}', [VacanciesShowController::class, '__invoke'])->name('vacancies.show');
 
