@@ -60,14 +60,20 @@ services:
 
     # Vue frontend service
     frontend:
-        image: node:18
+        image: node:20
         working_dir: /app
-        user: "${UID:-1000}:${GID:-1000}" # Запуск контейнера от текущего пользователя
+        user: "root"
         volumes:
             - ./frontend:/app
         ports:
             - "5173:5173"
-        command: sh -c "npm install && npm run dev -- --host"
+        command: >
+            sh -c "
+                groupadd -g ${GID} appgroup &&
+                useradd -u ${UID} -g ${GID} -ms /bin/bash appuser &&
+                chown -R appuser:appgroup /app &&
+                exec su -c 'npm run dev -- --host' appuser
+            "
         depends_on:
             - app
         container_name: job_finder_frontend
