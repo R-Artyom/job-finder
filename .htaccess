@@ -9,6 +9,12 @@ RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
 #############################################
+# 1.1 Favicon из сборки Vue
+#############################################
+RewriteCond %{DOCUMENT_ROOT}/frontend/dist/favicon.svg -f
+RewriteRule ^favicon\.svg$ frontend/dist/favicon.svg [L]
+
+#############################################
 # 2. Vue assets
 #############################################
 RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
