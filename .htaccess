@@ -1,5 +1,27 @@
 <IfModule mod_rewrite.c>
-RewriteEngine on
-RewriteCond %{REQUEST_URI} !^public
-RewriteRule ^(.*)$ public/$1 [L]
+RewriteEngine On
+
+#############################################
+# 1. Статические файлы - пропускаем
+#############################################
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+#############################################
+# 2. Vue assets
+#############################################
+RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
+
+#############################################
+# 3. Laravel API (обязательно должно быть до Vue SPA)
+#############################################
+RewriteRule ^api/(.*)$ public/index.php [L]
+
+#############################################
+# 4. Vue SPA
+#############################################
+RewriteRule ^$ frontend/dist/index.html [L]
+RewriteRule ^.*$ frontend/dist/index.html [L]
+
 </IfModule>

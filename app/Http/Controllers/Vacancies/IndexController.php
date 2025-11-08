@@ -14,9 +14,8 @@ class IndexController extends Controller
     public function __invoke(Request $request)
     {
         return Vacancy::query()
+            ->limit(15)
             ->get()
-            ->slice(0, 15)
-            ->values()
             ->toArray();
     }
 }
