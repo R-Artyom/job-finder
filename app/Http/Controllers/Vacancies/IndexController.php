@@ -14,7 +14,8 @@ class IndexController extends Controller
     public function __invoke(Request $request)
     {
         return Vacancy::query()
-            ->limit(15)
+            ->orderBy('id', 'desc')
+            ->limit(100)
             ->get()
             ->toArray();
     }
