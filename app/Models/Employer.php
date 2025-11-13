@@ -20,6 +20,8 @@ class Employer extends Model
     public function vacancies(): hasMany
     {
         // Связь работодателя с вакансиями - один ко многим
-        return $this->hasMany(Vacancy::class, 'employer_id', 'id');
+        return $this->hasMany(Vacancy::class, 'employer_id', 'id')
+            // Чтобы не попасть в бесконечный цикл
+            ->without('employer');
     }
 }

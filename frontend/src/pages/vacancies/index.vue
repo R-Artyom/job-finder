@@ -7,6 +7,7 @@
                 <tr>
                     <th class="border border-gray-400 px-1 py-2 w-16">№</th>
                     <th class="border border-gray-400 px-1 py-2 w-64">Название</th>
+                    <th class="border border-gray-400 px-3 py-2 w-32">Работодатель</th>
                     <th class="border border-gray-400 px-1 py-2 w-32">Регион</th>
                     <th class="border border-gray-400 px-1 py-2 w-64">Описание</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП от</th>
@@ -21,6 +22,11 @@
                     <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.id }}</td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
                         <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.name)" :title="cleanAllHtml(vacancy.name)"></div>
+                    </td>
+                    <td class="border border-gray-400 px-1 py-2 max-w-32">
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employer_id]?.name ?? '—' ">
+                            {{ employers[vacancy.employer_id]?.name ?? '—' }}
+                        </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.area_id }}</td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
@@ -42,27 +48,34 @@
 </template>
 
 <script>
-    import api from '../../axios.js'; // Путь к кастомному axios
+    import api from '../../axios.js';
 
     export default {
         name: "index",
 
         data() {
             return {
-                vacancies: []
+                // Вакансии
+                vacancies: [],
+                // Работодатели
+                employers: {},
             }
         },
 
         mounted() {
-            this.getVacancies()
+            this.getVacancies();
         },
 
         methods: {
             getVacancies() {
                 api.get('/vacancies')
-                    .then( res => {
-                        this.vacancies = res.data
+                    .then(res => {
+                        this.vacancies = res.data.data;
+                        this.employers = res.data.dictionaries?.employers || {};
                     })
+                    .catch(err => {
+                        console.error('Ошибка загрузки вакансий', err);
+                    });
             },
 
             // Очиста текста от тегов HTML, кроме тегов выделения текста
@@ -116,12 +129,12 @@
             },
 
             formatDate(dateStr) {
-                const date = new Date(dateStr)
+                const date = new Date(dateStr);
                 return date.toLocaleDateString('ru-RU', {
                     year: 'numeric',
                     month: 'short',
                     day: 'numeric'
-                })
+                });
             }
         }
     }
