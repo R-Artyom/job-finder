@@ -13,8 +13,6 @@ class Vacancy extends Model
     protected $table = 'vacancies';
     // Снять защиту массового заполнения модели
     protected $guarded = false;
-    // Постоянная жадная загрузка
-    protected $with = ['employer'];
 
     // Мутатор для обрезки description
     public function setDescriptionAttribute($value)

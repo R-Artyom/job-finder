@@ -14,6 +14,7 @@ class IndexController extends Controller
     public function __invoke(Request $request): array
     {
         $vacanciesModels = Vacancy::query()
+            ->with('employer:id,name')
             ->orderBy('id', 'desc')
             ->limit(100)
             ->get();

@@ -13,15 +13,11 @@ class Employer extends Model
     protected $table = 'employers';
     // Снять защиту массового заполнения модели
     protected $guarded = false;
-    // Постоянная жадная загрузка
-    protected $with = ['vacancies'];
 
     // Вакансии
     public function vacancies(): hasMany
     {
         // Связь работодателя с вакансиями - один ко многим
-        return $this->hasMany(Vacancy::class, 'employer_id', 'id')
-            // Чтобы не попасть в бесконечный цикл
-            ->without('employer');
+        return $this->hasMany(Vacancy::class, 'employer_id', 'id');
     }
 }
