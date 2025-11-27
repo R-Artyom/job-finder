@@ -44,10 +44,18 @@ class IndexController extends Controller
                 // Опубликовано
                 'published_at' => $vacancy->published_at,
             ];
+            // Словарь "Работодатели"
             if (isset($vacancy->employer->id) && !isset($result['dictionaries']['employers'][$vacancy->employer->id])) {
                 $result['dictionaries']['employers'][$vacancy->employer->id] = [
                     'id' => $vacancy->employer->id,
                     'name' => $vacancy->employer->name,
+                ];
+            }
+            // Словарь "Регионы"
+            if (isset($vacancy->area->id) && !isset($result['dictionaries']['areas'][$vacancy->area->id])) {
+                $result['dictionaries']['areas'][$vacancy->area->id] = [
+                    'id' => $vacancy->area->id,
+                    'name' => $vacancy->area->name,
                 ];
             }
         }

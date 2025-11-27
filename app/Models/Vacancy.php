@@ -26,4 +26,11 @@ class Vacancy extends Model
         // Связь вакансий с работодателем - принадлежит одному (обратная связь "Один ко многим")
         return $this->belongsTo(Employer::class, 'employer_id', 'id');
     }
+
+    // Регион
+    public function area(): BelongsTo
+    {
+        // Связь вакансий с регионом - принадлежит одному (обратная связь "Один ко многим")
+        return $this->belongsTo(Area::class, 'area_id', 'id');
+    }
 }

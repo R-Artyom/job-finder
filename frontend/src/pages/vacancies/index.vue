@@ -28,7 +28,11 @@
                             {{ employers[vacancy.employer_id]?.name ?? '—' }}
                         </div>
                     </td>
-                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.area_id }}</td>
+                    <td class="border border-gray-400 px-1 py-2 max-w-32">
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employer_id]?.name ?? '—' ">
+                            {{ areas[vacancy.area_id]?.name ?? '—' }}
+                        </div>
+                    </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
                         <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.description)" :title="cleanAllHtml(vacancy.description)"></div>
                     </td>
@@ -59,6 +63,8 @@
                 vacancies: [],
                 // Работодатели
                 employers: {},
+                // Регионы
+                areas: {},
             }
         },
 
@@ -72,6 +78,7 @@
                     .then(res => {
                         this.vacancies = res.data.data;
                         this.employers = res.data.dictionaries?.employers || {};
+                        this.areas = res.data.dictionaries?.areas;
                     })
                     .catch(err => {
                         console.error('Ошибка загрузки вакансий', err);
