@@ -12,6 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Запуск парсинга регионов
+        $schedule->command('parse-areas:run')->daily();
         // Запуск парсинга вакансии
         $schedule->command('parse-vacancy:run')->everyMinute();
     }
