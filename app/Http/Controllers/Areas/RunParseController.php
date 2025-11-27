@@ -44,12 +44,38 @@ class RunParseController extends Controller
                     return $a['id'] <=> $b['id'];
                 });
 
+                // * Отсев регионов, в которых не изменились данные
+                $currentAreasModels = Area::query()
+                    ->select('id', 'parent_id', 'name', 'utc_offset', 'created_at')
+                    ->get()
+                    ->keyBy('id');
+                foreach ($this->areas as $key => $area) {
+                    $id = $area['id'];
+                    // Новую запись оставить
+                    if (!isset($currentAreasModels[$id])) {
+                        continue;
+                    }
+                    // Существующую запись проверить на изменения
+                    $changed =
+                        $currentAreasModels[$id]->parent_id !== $area['parent_id'] ||
+                        $currentAreasModels[$id]->name !== $area['name'] ||
+                        $currentAreasModels[$id]->utc_offset !== $area['utc_offset'];
+                    // Если изменений нет, то обновлять данные региона не надо
+                    if (!$changed) {
+                        unset($this->areas[$key]);
+                    }
+                }
+
                 // * Заполнение таблицы данными
                 // Временное отключение проверки внешних ключей, т.к. при добавлении записи в БД бывают ссылки на ещё недобавленный регион
                 Schema::disableForeignKeyConstraints();
-                // Вставляем пакетами, чтобы не было слишком много строк одним запросом для MySQL
+                // Запись пакетами, чтобы не было слишком много строк одним запросом для MySQL
                 foreach (array_chunk($this->areas, 100) as $chunk) {
-                    Area::query()->insert($chunk);
+                    Area::query()->upsert(
+                        $chunk,
+                        ['id'], // Атрибут, по которому будет осуществляться поиск
+                        ['parent_id', 'name', 'utc_offset', 'updated_at'] // Атрибуты, которые будут обновляться
+                    );
                 }
                 // Возврат проверки внешних ключей
                 Schema::enableForeignKeyConstraints();
