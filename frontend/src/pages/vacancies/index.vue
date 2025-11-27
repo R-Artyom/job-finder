@@ -29,7 +29,7 @@
                         </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
-                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employer_id]?.name ?? '—' ">
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="areas[vacancy.area_id]?.name ?? '—' ">
                             {{ areas[vacancy.area_id]?.name ?? '—' }}
                         </div>
                     </td>
