@@ -43,7 +43,7 @@
                         <span :class="vacancy.archived ? 'text-red-600' : 'text-green-600'"> {{ vacancy.archived ? 'Да' : 'Нет' }}</span>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
-                        <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.published_atpublishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
+                        <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.publishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
                     </td>
                 </tr>
             </tbody>
