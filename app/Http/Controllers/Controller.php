@@ -14,6 +14,10 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+// ****************************************************************************
+//                                 Уведомления
+// ****************************************************************************
+
     /**
      * Отправка уведомления на почту
      *
@@ -68,6 +72,241 @@ class Controller extends BaseController
             ]);
         }
     }
+
+// ****************************************************************************
+//                                 Фильтрация
+// ****************************************************************************
+
+    /**
+     * Фильтрация коллекции
+     *
+     * @param Collection $collection фильтруемая коллекция
+     * @param array|null $filters массив фильтров из запроса
+     * @param array $filtersFormat формат данных
+     * @return Collection
+     */
+    protected function filterCollection(Collection $collection, ?array $filters, array $filtersFormat): Collection
+    {
+        if (!empty($filters)) {
+            // * Фильтрация коллекции по шаблону
+            if (isset($filtersFormat['filtersByLike'])) {
+                $filtersFormat['filtersByLike'] = array_flip($filtersFormat['filtersByLike']); // Поменять местами ключи с их значениями в массиве
+                $filtersByLike = array_intersect_key($filters, $filtersFormat['filtersByLike']); // Извлечь необходимые поля фильтра
+                if (!empty($filtersByLike)) {
+                    $this->filterCollectionByLike($collection, $filtersByLike);
+                }
+            }
+
+            // * Фильтрация коллекции по значению
+            if (isset($filtersFormat['filtersByIn'])) {
+                $filtersFormat['filtersByIn'] = array_flip($filtersFormat['filtersByIn']); // Поменять местами ключи с их значениями в массиве
+                $filtersByIn = array_intersect_key($filters, $filtersFormat['filtersByIn']); // Извлечь необходимые поля фильтра
+                if (!empty($filtersByIn)) {
+                    $this->filterCollectionByIn($collection, $filtersByIn);
+                }
+            }
+        }
+
+        // Отфильтрованная коллекция
+        return $collection;
+    }
+
+    /**
+     * Запрос опций фильтрации по полям
+     *
+     * @param Collection $collection фильтруемая коллекция
+     * @param array|null $filters массив фильтров из запроса
+     * @param array $filtersFormat формат данных
+     * @param bool $unique флаг "Необходимы только уникальные значения опций" (исп-ся для дальнейшего подсчета одинаковых значений (когда false))
+     * @return array
+     */
+    protected function getOptionsForFilters(Collection $collection, ?array $filters, array $filtersFormat, bool $unique = true): array
+    {
+        // * Опции фильтрации по полям:
+        // Начальные значения
+        $filterLists = [];
+        if (isset($filtersFormat['filtersByIn'])) {
+            // Поменять местами ключи с их значениями в массиве
+            $filtersFormat['filtersByIn'] = array_flip($filtersFormat['filtersByIn']);
+            // * Корректировка фильтра, если он есть в запросе (извлечь только ожидаемые поля)
+            if (!empty($filters)) {
+                $filters = array_intersect_key($filters, $filtersFormat['filtersByIn']);
+            }
+            // * Определение полей-массивов элементов коллекции
+            $isArrayByFields = $this->getIsArrayByFields($collection);
+
+            // Для каждого поля ожидаемого фильтра
+            foreach ($filtersFormat['filtersByIn'] as $filtersField => $filtersValue) {
+                // Каждый новый цикл нужна исходная коллекция
+                $filteredCollect = $collection;
+                // Если в запросе присутствуют ожидаемые поля для фильтрации
+                if (!empty($filters)) {
+                    // Инициализация массива, который необходимо исключить из фильтра
+                    $excludeArr = [];
+                    $excludeArr[$filtersField] = $filtersValue;
+                    // Убрать из принятого массива текущее поле
+                    $cutValidatedFilters = array_diff_key($filters, $excludeArr);
+                    // Если после удаления поля массив непустой
+                    if (!empty($cutValidatedFilters)) {
+                        // * Фильтрация коллекции
+                        $this->filterCollectionByIn($filteredCollect, $cutValidatedFilters);
+                    }
+                }
+
+                // Если коллекция пустая
+                if ($filteredCollect->isEmpty()) {
+                    $filterLists[$filtersField] = [];
+                    // Если выходное поле является массивом
+                } elseif ($isArrayByFields[$filtersField]) {
+                    // Если у элемента коллекции этот массив пустой, то в него необходимо добавить одно значение - null, для дальнейшего поиска на фронте по пустым значениям
+                    $filteredCollect = $filteredCollect->map(function ($item) use ($filtersField) {
+                        // Два варианта коллекции - массивами и с объектами
+                        if (is_array($item)) {
+                            $item[$filtersField] = empty($item[$filtersField]) ? [null] : $item[$filtersField];
+                        } else {
+                            $item->$filtersField = empty($item->$filtersField) ? [null] : $item->$filtersField;
+                        }
+                        return $item;
+                    });
+                    // Итоговые опции фильтрации для поля $field (собранные в один массив, уникальные, без сохранения оригинальных ключей)
+                    // Равнозначно, но быстрее, чем $filterLists[$filtersField] = $filteredCollect->pluck($filtersField)->collapse()->unique()->values()->toArray();
+                    foreach ($filteredCollect as $item) {
+                        $itemFiltersField = is_array($item) ? $item[$filtersField] : $item->$filtersField;
+                        foreach ($itemFiltersField as $value) {
+                            $filterLists[$filtersField][] = $value;
+                        }
+                    }
+                    // Если необходимы только уникальные значения
+                    if ($unique === true) {
+                        $filterLists[$filtersField] = array_values(array_unique($filterLists[$filtersField]));
+                    } else {
+                        $filterLists[$filtersField] = array_values($filterLists[$filtersField]);
+                    }
+                } else {
+                    // Итоговые опции фильтрации для поля $field (уникальные, без сохранения оригинальных ключей)
+                    // Равнозначно, но быстрее, чем  $filterLists[$filtersField] = $filteredCollect->pluck($filtersField)->unique()->values()->toArray();
+                    foreach ($filteredCollect as $item) {
+                        $filterLists[$filtersField][] = is_array($item) ? $item[$filtersField] : $item->$filtersField;
+                    }
+                    // Если необходимы только уникальные значения
+                    if ($unique === true) {
+                        $filterLists[$filtersField] = array_values(array_unique($filterLists[$filtersField]));
+                    } else {
+                        $filterLists[$filtersField] = array_values($filterLists[$filtersField]);
+                    }
+                }
+            }
+        }
+        // Опции фильтрации
+        return $filterLists;
+    }
+
+    /**
+     * Фильтрация коллекции по значению (низкий уровень)
+     *
+     * @param Collection $collection фильтруемая коллекция
+     * @param array $filters массив фильтров из запроса
+     * @return void
+     */
+    private function filterCollectionByIn(Collection &$collection, array $filters): void
+    {
+        if (!$collection->isEmpty()) {
+            // * Определение полей-массивов элементов коллекции
+            $isArrayByFields = $this->getIsArrayByFields($collection);
+            // * Фильтрация по всем полям фильтра
+            foreach ($filters as $field => $value) {
+                // Если выходное поле является массивом
+                if ($isArrayByFields[$field]) {
+                    // Фильтрация коллекции при помощи функции
+                    $collection = $collection->filter(function ($item) use ($field, $value) {
+                        // По каждому значению входного фильтрующего поля
+                        foreach ($value as $inputFilterElement) {
+                            // Массив выходного поля для двух вариантов коллекции (с массивами и с объектами)
+                            $outputArray = is_array($item) ? $item[$field] : $item->$field;
+                            // Если выходной массив пустой, то в него необходимо добавить одно значение - null, для поиска на фронте по пустым значениям
+                            $outputArray = empty($outputArray) ? [null] : $outputArray;
+                            // Если в массиве выходного поля есть значение фильтра (нестрогое сравнение)
+                            if (in_array($inputFilterElement, $outputArray)) {
+                                // Значит элемент коллекции надо оставить
+                                return true;
+                            }
+                        }
+                        // Все остальные элементы коллекции удалить
+                        return false;
+                    });
+                } else {
+                    // Удалить элементы коллекции, у которых значение поля отлично
+                    // от указанных в массиве поля входящего фильтра
+                    $collection = $collection->whereIn($field, $value);
+                }
+            }
+        }
+    }
+
+    /**
+     * Фильтрация коллекции по шаблону (низкий уровень)
+     *
+     * @param Collection $collection фильтруемая коллекция
+     * @param array $filters массив фильтров из запроса
+     * @return void
+     */
+    private function filterCollectionByLike(Collection &$collection, array $filters): void
+    {
+        if (!$collection->isEmpty()) {
+            // * Определение полей-массивов элементов коллекции
+            $isArrayByFields = $this->getIsArrayByFields($collection);
+            // * Фильтрация по всем полям фильтра
+            foreach ($filters as $field => $value) {
+                // Если выходное поле является массивом
+                if ($isArrayByFields[$field]) {
+                    // Фильтрация коллекции при помощи функции
+                    $collection = $collection->filter(function ($item) use ($field, $value) {
+                        // Шаблон
+                        $pattern = '/' . $value . '/iu';
+                        // Массив выходного поля для двух вариантов коллекции (с массивами и с объектами)
+                        $outputArray = is_array($item) ? $item[$field] : $item->$field;
+                        // По каждому значению массива вЫходного поля
+                        foreach ($outputArray as $outputArrayValue) {
+                            // Если шаблон входит в значение поля
+                            if (preg_match($pattern, $outputArrayValue) === 1) {
+                                return true;
+                            }
+                        }
+                        // Все остальные элементы коллекции удалить
+                        return false;
+                    });
+                } else {
+                    // Удалить элементы коллекции, у которых указанный шаблон не входит в значение поля
+                    $collection = $collection->filter(function ($item) use ($field, $value) {
+                        // Шаблон
+                        $pattern = '/' . $value . '/iu';
+                        return preg_match($pattern, $item[$field]) === 1;
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Определение полей-массивов элементов коллекции
+     *
+     * @param Collection $collection проверяемая коллекция
+     * @return array массив вида ["Поле1" => true, "Поле2" => false] (1е - массив, 2е - нет)
+     */
+    private function getIsArrayByFields(Collection &$collection): array
+    {
+        $isArrayByFields = [];
+        if (!$collection->isEmpty()) {
+            foreach ($collection->first() as $field => $value) {
+                $isArrayByFields[$field] = is_array($value);
+            }
+        }
+        return $isArrayByFields;
+    }
+
+// ****************************************************************************
+//                                Словари
+// ****************************************************************************
 
     /**
      * Получение словарей для конечного результата табличного метода

@@ -4,10 +4,25 @@ namespace App\Http\Controllers\Vacancies;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vacancy;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class IndexController extends Controller
 {
+    // Формат данных для фильтрации
+    const FILTERS_FORMAT = [
+        // Фильтры "ПО ЗНАЧЕНИЮ" - перечислить все ожидаемые поля с опциями фильтрации
+        'filtersByIn' => [
+            'employerId', // Работодатель
+            'areaId', // Регион
+            'salaryCurrency', // Валюта
+        ],
+        // Фильтры "ПО ШАБЛОНУ" в любой позиции - перечислить все ожидаемые поля без опций (Не должны совпадать с 'filtersByIn')
+        'filtersByLike' => [],
+    ];
+
     // Формат данных для словарей - перечислить поля, для которых необходим словарь (с названием словаря в качестве значения поля)
     const DICTIONARIES_FORMAT = [
         'employerId' => 'employers', // Работодатели
@@ -16,10 +31,61 @@ class IndexController extends Controller
 
     /**
      * Список вакансий
+     *
+     * @param Request $request
+     * @return JsonResponse|array
+     * @throws ValidationException
      */
-    public function __invoke(Request $request): array
+    public function __invoke(Request $request): JsonResponse|array
     {
+        // Валидация
+        $validator = Validator::make($request->all(), [
+            // * Фильтры с опциями:
+            'filters' => 'array|min:1',
+            // Работодатель
+            'filters.employerId' => 'array',
+            'filters.employerId.*' => 'nullable|distinct|integer',
+            // Регион
+            'filters.areaId' => 'array',
+            'filters.areaId.*' => 'nullable|distinct|integer',
+            // Валюта
+            'filters.salaryCurrency' => 'array',
+            'filters.salaryCurrency.*' => 'nullable|distinct|string',
+        ]);
+        // Ошибки валидации
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation Failed',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+        // Проверенные данные
+        $validated = $validator->validated();
+
+        // Построитель запроса
         $vacanciesModels = Vacancy::query()
+            ->select(
+                // №
+                'id',
+                // Название
+                'name',
+                // Работодатель
+                'employer_id',
+                // Регион
+                'area_id',
+                // Описание
+                'description',
+                // ЗП от
+                'salary_from',
+                // ЗП до
+                'salary_to',
+                // Валюта
+                'salary_currency',
+                // В архиве
+                'archived',
+                // Опубликовано
+                'published_at',
+            )
             ->with(['employer:id,name', 'area:id,name'])
             ->orderBy('id', 'desc')
             ->limit(100)
@@ -30,25 +96,15 @@ class IndexController extends Controller
         $dictionariesAll = [];
         foreach ($vacanciesModels as $vacancy) {
             $result[] = [
-                // №
                 'id' => $vacancy->id,
-                // Название
                 'name' => $vacancy->name,
-                // Работодатель
                 'employerId' => $vacancy->employer_id,
-                // Регион
                 'areaId' => $vacancy->area_id,
-                // Описание
                 'description' => $vacancy->description,
-                // ЗП от
                 'salaryFrom' => $vacancy->salary_from,
-                // ЗП до
                 'salaryTo' => $vacancy->salary_to,
-                // Валюта
                 'salaryCurrency' => $vacancy->salary_currency,
-                // В архиве
                 'archived' => $vacancy->archived,
-                // Опубликовано
                 'publishedAt' => $vacancy->published_at,
             ];
             // Словарь "Работодатели"
@@ -67,15 +123,31 @@ class IndexController extends Controller
             }
         }
 
+        // Преобразовать результирующий массив в коллекцию
+        $resultCollect = collect($result);
+
+        // * Опции фильтрации по полям
+        $filterLists = $this->getOptionsForFilters($resultCollect, $validated['filters'] ?? null, self::FILTERS_FORMAT);
+
+        // * Фильтрация
+        $resultCollect = $this->filterCollection($resultCollect, $validated['filters'] ?? null, self::FILTERS_FORMAT);
+
+        // * Общее количество отфильтрованных элементов
+        $filteredCount = $resultCollect->count();
+
         // * Словари
-        $dictionaries = $this->getResultDictionaries($result, $filterLists ?? [], $dictionariesAll, self::DICTIONARIES_FORMAT);
+        $dictionaries = $this->getResultDictionaries($resultCollect, $filterLists, $dictionariesAll, self::DICTIONARIES_FORMAT);
 
         // * Результирующий массив
         return [
             // Данные
-            'data' => $result,
+            'data' => $resultCollect->values()->toArray(),
+            // Доступные для фильтрации опции
+            'filterOptions' => $filterLists,
             // Словари
             'dictionaries' => $dictionaries,
+            // Общее количество отфильтрованных элементов
+            'filteredElementsCount' => $filteredCount
         ];
     }
 }
