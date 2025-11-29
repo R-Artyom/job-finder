@@ -14,7 +14,7 @@ class IndexController extends Controller
     public function __invoke(Request $request): array
     {
         $vacanciesModels = Vacancy::query()
-            ->with('employer:id,name')
+            ->with(['employer:id,name', 'area:id,name'])
             ->orderBy('id', 'desc')
             ->limit(100)
             ->get();
@@ -28,21 +28,21 @@ class IndexController extends Controller
                 // Название
                 'name' => $vacancy->name,
                 // Работодатель
-                'employer_id' => $vacancy->employer_id,
+                'employerId' => $vacancy->employer_id,
                 // Регион
-                'area_id' => $vacancy->area_id,
+                'areaId' => $vacancy->area_id,
                 // Описание
                 'description' => $vacancy->description,
                 // ЗП от
-                'salary_from' => $vacancy->salary_from,
+                'salaryFrom' => $vacancy->salary_from,
                 // ЗП до
-                'salary_to' => $vacancy->salary_to,
+                'salaryTo' => $vacancy->salary_to,
                 // Валюта
-                'salary_currency' => $vacancy->salary_currency,
+                'salaryCurrency' => $vacancy->salary_currency,
                 // В архиве
                 'archived' => $vacancy->archived,
                 // Опубликовано
-                'published_at' => $vacancy->published_at,
+                'publishedAt' => $vacancy->published_at,
             ];
             // Словарь "Работодатели"
             if (isset($vacancy->employer->id) && !isset($result['dictionaries']['employers'][$vacancy->employer->id])) {

@@ -24,26 +24,26 @@
                         <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.name)" :title="cleanAllHtml(vacancy.name)"></div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
-                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employer_id]?.name ?? '—' ">
-                            {{ employers[vacancy.employer_id]?.name ?? '—' }}
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employerId]?.name ?? '—' ">
+                            {{ employers[vacancy.employerId]?.name ?? '—' }}
                         </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
-                        <div class="truncate whitespace-nowrap overflow-hidden" :title="areas[vacancy.area_id]?.name ?? '—' ">
-                            {{ areas[vacancy.area_id]?.name ?? '—' }}
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="areas[vacancy.areaId]?.name ?? '—' ">
+                            {{ areas[vacancy.areaId]?.name ?? '—' }}
                         </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
                         <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.description)" :title="cleanAllHtml(vacancy.description)"></div>
                     </td>
-                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salary_from ?? '—' }}</td>
-                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salary_to ?? '—' }}</td>
-                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salary_currency ?? '—' }}</td>
+                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salaryFrom ?? '—' }}</td>
+                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salaryTo ?? '—' }}</td>
+                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salaryCurrency ?? '—' }}</td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
                         <span :class="vacancy.archived ? 'text-red-600' : 'text-green-600'"> {{ vacancy.archived ? 'Да' : 'Нет' }}</span>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
-                        <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.published_at ? formatDate(vacancy.published_at) : '—' }}</div>
+                        <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.published_atpublishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
                     </td>
                 </tr>
             </tbody>
