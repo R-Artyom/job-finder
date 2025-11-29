@@ -8,6 +8,12 @@ use Illuminate\Http\Request;
 
 class IndexController extends Controller
 {
+    // Формат данных для словарей - перечислить поля, для которых необходим словарь (с названием словаря в качестве значения поля)
+    const DICTIONARIES_FORMAT = [
+        'employerId' => 'employers', // Работодатели
+        'areaId' => 'areas', // Регионы
+    ];
+
     /**
      * Список вакансий
      */
@@ -19,10 +25,11 @@ class IndexController extends Controller
             ->limit(100)
             ->get();
 
-        // Результирующий массив
+        // * Результирующий массив
         $result = [];
+        $dictionariesAll = [];
         foreach ($vacanciesModels as $vacancy) {
-            $result['data'][] = [
+            $result[] = [
                 // №
                 'id' => $vacancy->id,
                 // Название
@@ -45,21 +52,30 @@ class IndexController extends Controller
                 'publishedAt' => $vacancy->published_at,
             ];
             // Словарь "Работодатели"
-            if (isset($vacancy->employer->id) && !isset($result['dictionaries']['employers'][$vacancy->employer->id])) {
-                $result['dictionaries']['employers'][$vacancy->employer->id] = [
-                    'id' => $vacancy->employer->id,
-                    'name' => $vacancy->employer->name,
+            if (isset($vacancy->employer_id) && !isset($dictionariesAll['employers'][$vacancy->employer_id])) {
+                $dictionariesAll['employers'][$vacancy->employer_id] = [
+                    'id' => $vacancy->employer_id,
+                    'name' => $vacancy->employer->name ?? null,
                 ];
             }
             // Словарь "Регионы"
-            if (isset($vacancy->area->id) && !isset($result['dictionaries']['areas'][$vacancy->area->id])) {
-                $result['dictionaries']['areas'][$vacancy->area->id] = [
-                    'id' => $vacancy->area->id,
-                    'name' => $vacancy->area->name,
+            if (isset($vacancy->area_id) && !isset($dictionariesAll['areas'][$vacancy->area_id])) {
+                $dictionariesAll['areas'][$vacancy->area_id] = [
+                    'id' => $vacancy->area_id,
+                    'name' => $vacancy->area->name ?? null,
                 ];
             }
         }
 
-        return $result;
+        // * Словари
+        $dictionaries = $this->getResultDictionaries($result, $filterLists ?? [], $dictionariesAll, self::DICTIONARIES_FORMAT);
+
+        // * Результирующий массив
+        return [
+            // Данные
+            'data' => $result,
+            // Словари
+            'dictionaries' => $dictionaries,
+        ];
     }
 }

@@ -6,6 +6,7 @@ use App\Mail\Notify;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Mail;
 use Telegram\Bot\Laravel\Facades\Telegram;
 
@@ -66,5 +67,115 @@ class Controller extends BaseController
                 'text' => $notifyData,
             ]);
         }
+    }
+
+    /**
+     * Получение словарей для конечного результата табличного метода
+     *
+     * @param array|Collection $data отфильтрованная и срезанная коллекция (или массив)
+     * @param array $filterOptions опции фильтрации полей
+     * @param array $dictionariesAll полный словарь, из которого необходимо брать значения
+     * @param array $dictionariesFormat формат словарей
+     * @return array
+     */
+    protected function getResultDictionaries(array|Collection $data, array $filterOptions, array $dictionariesAll, array $dictionariesFormat): array
+    {
+        $dictionaries = [];
+        if (!empty($dictionariesFormat)) {
+            // Если для опций не нужен словарь
+            if (empty($filterOptions)) {
+                $dictionaries = $this->getDataObjectsDictionaries($data, $dictionariesAll, $dictionariesFormat);
+            } else {
+                // * Определение формата словарей для данных с объектами
+                // Получение всех полей опций фильтрации
+                $filterOptionsFields = [];
+                foreach ($filterOptions as $field => $value) {
+                    $filterOptionsFields[] = $field;
+                }
+                // Расхождение массивов - нужны словари только на те поля, которых нет в опциях фильтрации
+                $dataDictionariesFormat = array_diff_key($dictionariesFormat, array_flip($filterOptionsFields));
+
+                // * Получить словари для опций фильтрации
+                $dictionaries = $this->getFilterOptionsDictionaries($filterOptions, $dictionariesAll, $dictionariesFormat);
+
+                // * Добавить словари для данных с объектами
+                $dictionaries = array_merge($dictionaries, $this->getDataObjectsDictionaries($data, $dictionariesAll, $dataDictionariesFormat));
+            }
+        }
+        return $dictionaries;
+    }
+
+    /**
+     * Получение словарей для всех опций фильтрации
+     *
+     * @param array $filterOptions опции фильтрации полей
+     * @param array $dictionariesAll полный словарь, из которого необходимо брать значения
+     * @param array $dictionariesFormat формат словарей
+     * @return array
+     */
+    protected function getFilterOptionsDictionaries(array $filterOptions, array $dictionariesAll, array $dictionariesFormat): array
+    {
+        $dictionaries = [];
+        if (!empty($dictionariesFormat)) {
+            foreach ($filterOptions as $field => $options) {
+                if (!empty($options)) {
+                    // Если нужен словарь для такого поля
+                    if (array_key_exists($field, $dictionariesFormat)) {
+                        // Перебор всех опций поля
+                        foreach ($options as $option) {
+                            // Название словаря
+                            $dictionaryName = $dictionariesFormat[$field];
+                            // Отображать только непустое значение, иначе ключ = null или ""
+                            if (isset($option)) {
+                                $dictionaries[$dictionaryName][$option] = $dictionariesAll[$dictionaryName][$option];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $dictionaries;
+    }
+
+    /**
+     * Получение словарей для объектов поля "data" отфильтрованной и срезанной коллекции
+     *
+     * @param array|Collection $data отфильтрованная и срезанная коллекция / массив
+     * @param array $dictionariesAll полный словарь, из которого необходимо брать значения
+     * @param array $dictionariesFormat формат словарей
+     * @return array
+     */
+    protected function getDataObjectsDictionaries(array|Collection $data, array $dictionariesAll, array $dictionariesFormat): array
+    {
+        $dictionaries = [];
+        if (!empty($dictionariesFormat)) {
+            // Для отфильтрованной и срезанной коллекции:
+            foreach ($data as $item) {
+                // Пробежка по полям объекта
+                foreach ($item as $field => $value) {
+                    // Если нужен словарь для поля
+                    if (isset($dictionariesFormat[$field])) {
+                        // Название словаря
+                        $dictionaryName = $dictionariesFormat[$field];
+                        // Если значение поля - массив
+                        if (is_array($value)) {
+                            foreach ($value as $arrayValue) {
+                                if (isset($arrayValue)) {
+                                    // Отображать только непустое значение, иначе ключ = null или ""
+                                    $dictionaries[$dictionaryName][$arrayValue] = $dictionariesAll[$dictionaryName][$arrayValue];
+                                }
+                            }
+                        // Если значение поля - НЕ массив
+                        } else {
+                            // Отображать только непустое значение, иначе ключ = null или ""
+                            if (isset($value)) {
+                                $dictionaries[$dictionaryName][$value] = $dictionariesAll[$dictionaryName][$value];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $dictionaries;
     }
 }
