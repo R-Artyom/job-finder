@@ -11,6 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class IndexController extends Controller
 {
+    // Данные для пагинации по умолчанию
+    const LIMIT = 100;
+    const OFFSET = 0;
+
     // Формат данных для фильтрации
     const FILTERS_FORMAT = [
         // Фильтры "ПО ЗНАЧЕНИЮ" - перечислить все ожидаемые поля с опциями фильтрации
@@ -40,6 +44,10 @@ class IndexController extends Controller
     {
         // Валидация
         $validator = Validator::make($request->all(), [
+            // * Данные для пагинации:
+            'limit' => 'integer',
+            'offset' => 'integer',
+
             // * Фильтры с опциями:
             'filters' => 'array|min:1',
             // Работодатель
@@ -61,6 +69,10 @@ class IndexController extends Controller
         }
         // Проверенные данные
         $validated = $validator->validated();
+
+        // Корректировка данных для пагинации
+        $limit = (isset($validated['limit']) ? (int) $validated['limit'] : self::LIMIT) ?: null;
+        $offset = isset($validated['offset']) ? (int) $validated['offset'] : self::OFFSET;
 
         // Построитель запроса
         $vacanciesModels = Vacancy::query()
@@ -134,6 +146,9 @@ class IndexController extends Controller
 
         // * Общее количество отфильтрованных элементов
         $filteredCount = $resultCollect->count();
+
+        // * Выбрать срез коллекции
+        $resultCollect = $resultCollect->slice($offset, $limit);
 
         // * Словари
         $dictionaries = $this->getResultDictionaries($resultCollect, $filterLists, $dictionariesAll, self::DICTIONARIES_FORMAT);
