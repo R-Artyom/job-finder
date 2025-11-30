@@ -22,6 +22,7 @@ class IndexController extends Controller
             'employerId', // Работодатель
             'areaId', // Регион
             'salaryCurrency', // Валюта
+            'archived', // В архиве
         ],
         // Фильтры "ПО ШАБЛОНУ" в любой позиции - перечислить все ожидаемые поля без опций (Не должны совпадать с 'filtersByIn')
         'filtersByLike' => [],
@@ -65,6 +66,9 @@ class IndexController extends Controller
             // Валюта
             'filters.salaryCurrency' => 'array',
             'filters.salaryCurrency.*' => 'nullable|distinct|string',
+            // В архиве
+            'filters.archived' => 'array',
+            'filters.archived.*' => 'nullable|distinct|integer',
 
             // * Фильтры без опций:
             // Дата публикации
