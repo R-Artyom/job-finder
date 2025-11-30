@@ -33,4 +33,16 @@ class Vacancy extends Model
         // Связь вакансий с регионом - принадлежит одному (обратная связь "Один ко многим")
         return $this->belongsTo(Area::class, 'area_id', 'id');
     }
+
+    /**
+     * Аксессор - Преобразование атрибута published_at (дата публикации) при запросе
+     *
+     * @param string $value Оригинальное значение атрибута published_at
+     * @return int|null - Преобразованное значение атрибута published_at
+     */
+    public function getPublishedAtAttribute(string $value): ?int
+    {
+        // Преобразовывание текстового представления даты в метку времени Unix
+        return empty($value) ? null : strtotime($value);
+    }
 }

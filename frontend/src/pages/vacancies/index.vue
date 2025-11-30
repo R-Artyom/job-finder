@@ -135,12 +135,22 @@
                 return s;
             },
 
-            formatDate(dateStr) {
-                const date = new Date(dateStr);
+            formatDate(timestamp) {
+                // Преобразуем Unix timestamp из секунд в миллисекунды
+                const date = new Date(timestamp * 1000);
+
+                // Проверяем, что дата валидна
+                if (isNaN(date.getTime())) {
+                    return '—';
+                }
+
                 return date.toLocaleDateString('ru-RU', {
                     year: 'numeric',
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
                 });
             }
         }

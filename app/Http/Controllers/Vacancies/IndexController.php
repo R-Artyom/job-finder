@@ -33,6 +33,12 @@ class IndexController extends Controller
         'areaId' => 'areas', // Регионы
     ];
 
+    // Фильтры по датам - перечислить все ожидаемые поля с фильтрацией по дате
+    // (<название фильтра> => <название таблицы>.<название поля в таблице>)
+    const DATE_FILTERS = [
+        'publishedAt' => 'vacancies.published_at', // Дата публикации
+    ];
+
     /**
      * Список вакансий
      *
@@ -59,6 +65,11 @@ class IndexController extends Controller
             // Валюта
             'filters.salaryCurrency' => 'array',
             'filters.salaryCurrency.*' => 'nullable|distinct|string',
+
+            // * Фильтры без опций:
+            // Дата публикации
+            'filters.publishedAt' => 'array|size:2',
+            'filters.publishedAt.*' => 'integer',
         ]);
         // Ошибки валидации
         if ($validator->fails()) {
@@ -75,7 +86,7 @@ class IndexController extends Controller
         $offset = isset($validated['offset']) ? (int) $validated['offset'] : self::OFFSET;
 
         // Построитель запроса
-        $vacanciesModels = Vacancy::query()
+        $vacanciesBuilder = Vacancy::query()
             ->select(
                 // №
                 'id',
@@ -100,8 +111,17 @@ class IndexController extends Controller
             )
             ->with(['employer:id,name', 'area:id,name'])
             ->orderBy('id', 'desc')
-            ->limit(100)
-            ->get();
+            ->limit(100);
+
+        // Фильтрация по датам
+        foreach (self::DATE_FILTERS as $filtersField => $filtersValue) {
+            if (!empty($validated['filters'][$filtersField])) {
+                $this->filterQueryByDate($vacanciesBuilder, $validated['filters'][$filtersField], $filtersValue);
+            }
+        }
+
+        // Получение данных в соответствии с построителем
+        $vacanciesModels = $vacanciesBuilder->get();
 
         // * Результирующий массив
         $result = [];

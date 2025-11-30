@@ -14,6 +14,24 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, ValidatesRequests;
 
+    protected function filterQueryByDate($data, array $filterDates, string $column)
+    {
+        $startDate = $filterDates[0] ? date("Y-m-d H:i:s", $filterDates[0]) : null;
+        $endDate = $filterDates[1] ? date("Y-m-d H:i:s", $filterDates[1]) : null;
+
+        if ($startDate && $endDate) {
+            $data->whereBetween($column, [$startDate, $endDate]);
+        } else {
+            if ($startDate || $endDate) {
+                if ($startDate) {
+                    $data->where($column, '>=', $startDate);
+                } else {
+                    $data->where($column, '<=', $endDate);
+                }
+            }
+        }
+    }
+
 // ****************************************************************************
 //                                 Уведомления
 // ****************************************************************************
