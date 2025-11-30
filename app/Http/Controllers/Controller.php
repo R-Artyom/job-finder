@@ -32,6 +32,51 @@ class Controller extends BaseController
         }
     }
 
+    /**
+     * Сортировка результата табличного метода.
+     *
+     * @param Collection $result - коллекция, подвергаемая сортировке
+     * @param array $sortSetup - параметры сортировки из запроса
+     * @param array $defSort - параметры сортировки по умолчанию, в случае отсутствия $sortSetup
+     * @return void
+     */
+    protected function sortResult(Collection &$result, array $sortSetup, array $defSort = []): void
+    {
+        if (! empty($sortSetup)) {
+            // Установка направления сортировки (в случае её отсутствия)
+            foreach ($sortSetup as $key => $value) {
+                if (!isset($value['order'])) {
+                    $sortSetup[$key]['order'] = 'asc';
+                }
+            }
+            $result = $result->sort(function ($a, $b) use ($sortSetup) {
+                $res = 0;
+                $isArray = is_array($a);
+                foreach ($sortSetup as $setup) {
+                    $valueA = $isArray ? $a[$setup['field']] : $a->{$setup['field']};
+                    $valueB = $isArray ? $b[$setup['field']] : $b->{$setup['field']};
+
+                    if ($valueA == $valueB) {
+                        continue;
+                    }
+                    $res = ($valueA < $valueB) ? -1 : 1;
+                    if ($setup['order'] == 'desc') {
+                        $res = -$res;
+                    }
+                }
+                return $res;
+            });
+        } else {
+            if (! empty($defSort)) {
+                $defSortField = $defSort['field'];
+                $defSortOrder = $defSort['order'];
+                $result = $defSortOrder === 'asc' ? $result->sortBy($defSortField) : $result->sortByDesc($defSortField);
+            } else {
+                $result = $result->sortByDesc('id');
+            }
+        }
+    }
+
 // ****************************************************************************
 //                                 Уведомления
 // ****************************************************************************

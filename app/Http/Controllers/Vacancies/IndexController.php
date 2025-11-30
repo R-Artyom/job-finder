@@ -82,6 +82,11 @@ class IndexController extends Controller
             // Дата публикации
             'filters.publishedAt' => 'array|size:2',
             'filters.publishedAt.*' => 'integer',
+
+            // * Сортировка:
+            'sortSetup' => 'array|min:1',
+            'sortSetup.*.field' => 'required_with:sortSetup|in:id,publishedAt',
+            'sortSetup.*.order' => 'string|in:asc,desc',
         ]);
         // Ошибки валидации
         if ($validator->fails()) {
@@ -202,6 +207,9 @@ class IndexController extends Controller
 
         // * Общее количество отфильтрованных элементов
         $filteredCount = $resultCollect->count();
+
+        // * Сортировка
+        $this->sortResult($resultCollect, $validated['sortSetup'] ?? []);
 
         // * Выбрать срез коллекции
         $resultCollect = $resultCollect->slice($offset, $limit);
