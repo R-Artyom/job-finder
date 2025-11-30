@@ -71,6 +71,10 @@ class IndexController extends Controller
             'filters.archived.*' => 'nullable|distinct|integer',
 
             // * Фильтры без опций:
+            // Название вакансии
+            'filters.name' => 'string',
+            // Описание вакансии
+            'filters.description' => 'string',
             // Дата публикации
             'filters.publishedAt' => 'array|size:2',
             'filters.publishedAt.*' => 'integer',
@@ -122,6 +126,18 @@ class IndexController extends Controller
             if (!empty($validated['filters'][$filtersField])) {
                 $this->filterQueryByDate($vacanciesBuilder, $validated['filters'][$filtersField], $filtersValue);
             }
+        }
+
+        // Фильтрация по тексту в любой позиции названия вакансии
+        $filterByName = $validated['filters']['name'] ?? null;
+        if (isset($filterByName)) {
+            $vacanciesBuilder->where('vacancies.name', 'like', "%$filterByName%");
+        }
+
+        // Фильтрация по тексту в любой позиции описания вакансии
+        $filterByDescription = $validated['filters']['description'] ?? null;
+        if (isset($filterByDescription)) {
+            $vacanciesBuilder->where('vacancies.description', 'like', "%$filterByDescription%");
         }
 
         // Получение данных в соответствии с построителем
