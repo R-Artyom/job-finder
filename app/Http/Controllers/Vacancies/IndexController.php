@@ -75,6 +75,10 @@ class IndexController extends Controller
             'filters.name' => 'string',
             // Описание вакансии
             'filters.description' => 'string',
+            // ЗП от
+            'filters.salaryFrom' => 'integer',
+            // ЗП до
+            'filters.salaryTo' => 'integer',
             // Дата публикации
             'filters.publishedAt' => 'array|size:2',
             'filters.publishedAt.*' => 'integer',
@@ -138,6 +142,18 @@ class IndexController extends Controller
         $filterByDescription = $validated['filters']['description'] ?? null;
         if (isset($filterByDescription)) {
             $vacanciesBuilder->where('vacancies.description', 'like', "%$filterByDescription%");
+        }
+
+        // Фильтрация по "ЗП от"
+        $filterBySalaryFrom = $validated['filters']['salaryFrom'] ?? null;
+        if (isset($filterBySalaryFrom)) {
+            $vacanciesBuilder->where('vacancies.salary_from', '>=', $filterBySalaryFrom);
+        }
+
+        // Фильтрация по "ЗП до"
+        $filterBySalaryTo = $validated['filters']['salaryTo'] ?? null;
+        if (isset($filterBySalaryTo)) {
+            $vacanciesBuilder->where('vacancies.salary_to', '<=', $filterBySalaryTo);
         }
 
         // Получение данных в соответствии с построителем
