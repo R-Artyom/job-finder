@@ -11,33 +11,69 @@ use Illuminate\Validation\ValidationException;
 
 class IndexController extends Controller
 {
-    // Данные для пагинации по умолчанию
-    const LIMIT = 100;
-    const OFFSET = 0;
+    // Параметры пагинации по умолчанию
+    private const MAX_LIMIT = 200;
+    private const DEFAULT_LIMIT = 100;
 
     // Формат данных для фильтрации
+    // "in" - фильтр по значению
+    // "like" - фильтр по шаблону
+    // "date" - фильтр по дате
+    // "from" - фильтр "От"
+    // "to" - фильтр "До"
     const FILTERS_FORMAT = [
-        // Фильтры "ПО ЗНАЧЕНИЮ" - перечислить все ожидаемые поля с опциями фильтрации
-        'filtersByIn' => [
-            'employerId', // Работодатель
-            'areaId', // Регион
-            'salaryCurrency', // Валюта
-            'archived', // В архиве
+        // Работодатель
+        'employerId' => [
+            'type' => 'in',
+            'column' => 'employer_id',
         ],
-        // Фильтры "ПО ШАБЛОНУ" в любой позиции - перечислить все ожидаемые поля без опций (Не должны совпадать с 'filtersByIn')
-        'filtersByLike' => [],
+        // Регион
+        'areaId' => [
+            'type' => 'in',
+            'column' => 'area_id',
+        ],
+        // Валюта
+        'salaryCurrency' => [
+            'type' => 'in',
+            'column' => 'salary_currency',
+        ],
+        // В архиве
+        'archived' => [
+            'type' => 'in',
+            'column' => 'archived',
+        ],
+        // Название
+        'name' => [
+            'type' => 'like',
+            'column' => 'name',
+        ],
+        // Описание
+        'description' => [
+            'type' => 'like',
+            'column' => 'description',
+        ],
+        // Дата публикации
+        'publishedAt' => [
+            'type' => 'date',
+            'column' => 'published_at',
+        ],
+        // ЗП от
+        'salaryFrom' => [
+            'type' => 'from',
+            'column' => 'salary_from',
+        ],
+        // ЗП до
+        'salaryTo' => [
+            'type' => 'to',
+            'column' => 'salary_to',
+        ],
     ];
 
-    // Формат данных для словарей - перечислить поля, для которых необходим словарь (с названием словаря в качестве значения поля)
-    const DICTIONARIES_FORMAT = [
-        'employerId' => 'employers', // Работодатели
-        'areaId' => 'areas', // Регионы
-    ];
-
-    // Фильтры по датам - перечислить все ожидаемые поля с фильтрацией по дате
-    // (<название фильтра> => <название таблицы>.<название поля в таблице>)
-    const DATE_FILTERS = [
-        'publishedAt' => 'vacancies.published_at', // Дата публикации
+    // Поля для сортировки
+    const SORT_FIELD = [
+        'id' => 'id',
+        'publishedAt' => 'published_at',
+        'name' => 'name',
     ];
 
     /**
@@ -51,9 +87,9 @@ class IndexController extends Controller
     {
         // Валидация
         $validator = Validator::make($request->all(), [
-            // * Данные для пагинации:
+            // * Параметры курсорной пагинации (keyset pagination):
             'limit' => 'integer',
-            'offset' => 'integer',
+            'next' => 'integer',
 
             // * Фильтры с опциями:
             'filters' => 'array|min:1',
@@ -81,12 +117,12 @@ class IndexController extends Controller
             'filters.salaryTo' => 'integer',
             // Дата публикации
             'filters.publishedAt' => 'array|size:2',
-            'filters.publishedAt.*' => 'integer',
+            'filters.publishedAt.*' => 'string',
 
             // * Сортировка:
-            'sortSetup' => 'array|min:1',
-            'sortSetup.*.field' => 'required_with:sortSetup|in:id,publishedAt',
-            'sortSetup.*.order' => 'string|in:asc,desc',
+            'sort' => 'array|min:1',
+            'sort.*.field' => 'required_with:sort|string|in:id,publishedAt,name',
+            'sort.*.order' => 'string|in:asc,desc',
         ]);
         // Ошибки валидации
         if ($validator->fails()) {
@@ -98,11 +134,37 @@ class IndexController extends Controller
         // Проверенные данные
         $validated = $validator->validated();
 
-        // Корректировка данных для пагинации
-        $limit = (isset($validated['limit']) ? (int) $validated['limit'] : self::LIMIT) ?: null;
-        $offset = isset($validated['offset']) ? (int) $validated['offset'] : self::OFFSET;
+        // * Параметры пагинации
+        // Предельное количество возвращаемых данных
+        $limit = isset($validated['limit'])
+            ? max(1, min(self::MAX_LIMIT, (int) $validated['limit']))
+            : self::DEFAULT_LIMIT;
+        // Значение, после которого необходимо получить следующий пакет данных.
+        // В первом запросе должен отсутствовать. Для следующих запросов необходимо брать значения из одноимённого поля в ответе
+        $next = isset($validated['next']) ? (int) $validated['next'] : null;
 
-        // Построитель запроса
+        // * Параметры фильтрации
+        $filters = $validated['filters'] ?? [];
+
+        // * Параметры множественной сортировки
+        if (!empty($validated['sort'])) {
+            foreach ($validated['sort'] as $value) {
+                // $sort[0] - параметры для первичной сортировки, $sort[1] - вторичной и т.д.
+                $sort[] = [
+                    'field' => self::SORT_FIELD[$value['field']],
+                    'order' => $value['order'] ?? 'asc',
+                ];
+            }
+        }
+        // Сортировка по умолчанию
+        if (empty($sort)) {
+            $sort[0] = [
+                'field' => 'id',
+                'order' => 'desc',
+            ];
+        }
+
+        // * Начальное значение построителя запроса
         $vacanciesBuilder = Vacancy::query()
             ->select(
                 // №
@@ -125,108 +187,120 @@ class IndexController extends Controller
                 'archived',
                 // Опубликовано
                 'published_at',
-            )
-            ->with(['employer:id,name', 'area:id,name'])
-            ->orderBy('id', 'desc')
-            ->limit(100);
-
-        // Фильтрация по датам
-        foreach (self::DATE_FILTERS as $filtersField => $filtersValue) {
-            if (!empty($validated['filters'][$filtersField])) {
-                $this->filterQueryByDate($vacanciesBuilder, $validated['filters'][$filtersField], $filtersValue);
-            }
-        }
-
-        // Фильтрация по тексту в любой позиции названия вакансии
-        $filterByName = $validated['filters']['name'] ?? null;
-        if (isset($filterByName)) {
-            $vacanciesBuilder->where('vacancies.name', 'like', "%$filterByName%");
-        }
-
-        // Фильтрация по тексту в любой позиции описания вакансии
-        $filterByDescription = $validated['filters']['description'] ?? null;
-        if (isset($filterByDescription)) {
-            $vacanciesBuilder->where('vacancies.description', 'like', "%$filterByDescription%");
-        }
-
-        // Фильтрация по "ЗП от"
-        $filterBySalaryFrom = $validated['filters']['salaryFrom'] ?? null;
-        if (isset($filterBySalaryFrom)) {
-            $vacanciesBuilder->where('vacancies.salary_from', '>=', $filterBySalaryFrom);
-        }
-
-        // Фильтрация по "ЗП до"
-        $filterBySalaryTo = $validated['filters']['salaryTo'] ?? null;
-        if (isset($filterBySalaryTo)) {
-            $vacanciesBuilder->where('vacancies.salary_to', '<=', $filterBySalaryTo);
-        }
-
-        // Получение данных в соответствии с построителем
-        $vacanciesModels = $vacanciesBuilder->get();
-
-        // * Результирующий массив
-        $result = [];
-        $dictionariesAll = [];
-        foreach ($vacanciesModels as $vacancy) {
-            $result[] = [
-                'id' => $vacancy->id,
-                'name' => $vacancy->name,
-                'employerId' => $vacancy->employer_id,
-                'areaId' => $vacancy->area_id,
-                'description' => $vacancy->description,
-                'salaryFrom' => $vacancy->salary_from,
-                'salaryTo' => $vacancy->salary_to,
-                'salaryCurrency' => $vacancy->salary_currency,
-                'archived' => $vacancy->archived,
-                'publishedAt' => $vacancy->published_at,
-            ];
-            // Словарь "Работодатели"
-            if (isset($vacancy->employer_id) && !isset($dictionariesAll['employers'][$vacancy->employer_id])) {
-                $dictionariesAll['employers'][$vacancy->employer_id] = [
-                    'id' => $vacancy->employer_id,
-                    'name' => $vacancy->employer->name ?? null,
-                ];
-            }
-            // Словарь "Регионы"
-            if (isset($vacancy->area_id) && !isset($dictionariesAll['areas'][$vacancy->area_id])) {
-                $dictionariesAll['areas'][$vacancy->area_id] = [
-                    'id' => $vacancy->area_id,
-                    'name' => $vacancy->area->name ?? null,
-                ];
-            }
-        }
-
-        // Преобразовать результирующий массив в коллекцию
-        $resultCollect = collect($result);
-
-        // * Опции фильтрации по полям
-        $filterLists = $this->getOptionsForFilters($resultCollect, $validated['filters'] ?? null, self::FILTERS_FORMAT);
+            );
 
         // * Фильтрация
-        $resultCollect = $this->filterCollection($resultCollect, $validated['filters'] ?? null, self::FILTERS_FORMAT);
+        $this->applyFiltersToQuery($vacanciesBuilder, $filters, self::FILTERS_FORMAT);
 
-        // * Общее количество отфильтрованных элементов
-        $filteredCount = $resultCollect->count();
+        // * Пагинация (с учетом множественной сортировки)
+        if ($next !== null) {
+            // Последняя (граничная) запись на текущей странице
+            $pivot = Vacancy::query()
+                ->select('id', 'published_at', 'name')
+                ->where('id', $next)
+                ->first();
+            // Если эта запись существует, то найти все записи, идущие за ней (в соответствии с сортировкой)
+            if ($pivot) {
+                $vacanciesBuilder->where(function ($builder) use ($sort, $pivot) {
+                    $this->applyMultiFieldKeyset($builder, $sort, $pivot, 0);
+                });
+            }
+        }
 
         // * Сортировка
-        $this->sortResult($resultCollect, $validated['sortSetup'] ?? []);
+        foreach ($sort as $value) {
+            $vacanciesBuilder->orderBy($value['field'], $value['order']);
+        }
 
-        // * Выбрать срез коллекции
-        $resultCollect = $resultCollect->slice($offset, $limit);
+        // * Получение данных (+1 строка для hasMore)
+        $vacanciesModels = $vacanciesBuilder->limit($limit + 1)->get();
+        // Признак наличия других страниц
+        $hasMore = $vacanciesModels->count() > $limit;
+        // Обрезка, если надо
+        if ($hasMore) {
+            $vacanciesModels = $vacanciesModels->slice(0, $limit);
+        }
+
+        // * Ссылка на id самой последней записи текущей страницы после выполнения всех фильтраций и сортировок
+        $next = $vacanciesModels->isNotEmpty() && $hasMore ? $vacanciesModels->last()->id : null;
+
+        // * Фасеты
+        $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
 
         // * Словари
-        $dictionaries = $this->getResultDictionaries($resultCollect, $filterLists, $dictionariesAll, self::DICTIONARIES_FORMAT);
+        // Id работодателей (исключить пустые значения)
+        $ids['employers'] = array_unique(array_merge(
+            $vacanciesModels->pluck('employer_id')->filter()->all(),
+            collect($facetResults['employerId'] ?? [])->filter()->all()
+        ));
+        // Id регионов (исключить пустые значения)
+        $ids['areas'] = array_unique(array_merge(
+            $vacanciesModels->pluck('area_id')->filter()->all(),
+            collect($facetResults['areaId'] ?? [])->filter()->all()
+        ));
+        // Получить словари
+        $dictionaries = $this->getDictionaries($ids);
 
-        // * Результирующий массив
+        // * Подсчёт общего количества записей
+        $countQuery = Vacancy::query();
+        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
+        $totalCount = $countQuery->count();
+
+        // * Ответ
         return [
-            // Данные
-            'data' => $resultCollect->values()->toArray(),
-            // Доступные для фильтрации опции
-            'filterOptions' => $filterLists,
-            // Словари
+            'data' => $vacanciesModels->values()->map(function ($vacancy) {
+                return [
+                    'id' => $vacancy->id,
+                    'name' => $vacancy->name,
+                    'employerId' => $vacancy->employer_id,
+                    'areaId' => $vacancy->area_id,
+                    'description' => $vacancy->description,
+                    'salaryFrom' => $vacancy->salary_from,
+                    'salaryTo' => $vacancy->salary_to,
+                    'salaryCurrency' => $vacancy->salary_currency,
+                    'archived' => $vacancy->archived,
+                    'publishedAt' => empty($vacancy->published_at) ? null : strtotime($vacancy->published_at),
+                ];
+            }),
+            'filterOptions' => $facetResults,
             'dictionaries' => $dictionaries,
-            // Общее количество отфильтрованных элементов
-            'filteredElementsCount' => $filteredCount
+            'pagination' => [
+                'limit' => $limit,
+                'next' => $next,
+            ],
+            'filteredElementsCount' => $totalCount,
         ];
+    }
+
+    /**
+     * Фасеты (опции фильтрации)
+     *
+     * @param array $filters Массив фильтров из запроса
+     * @param array $filtersFormat Формат данных
+     * @return array
+     */
+    protected function getFacetOptions(array $filters, array $filtersFormat): array
+    {
+        $facetResults = [];
+        foreach ($filtersFormat as $key => $value) {
+            if ($value['type'] === 'in') {
+                // Полная копия входных фильтров
+                $filtersForFacet = $filters;
+                // Удаление фильтра, для которого будет происходить поиск опций
+                unset($filtersForFacet[$key]);
+                // Формирование запроса
+                $query = Vacancy::query();
+                // Применить усеченные фильтьры
+                $this->applyFiltersToQuery($query, $filtersForFacet, self::FILTERS_FORMAT);
+                // Результат
+                $facetResults[$key] = $query->select($value['column'])
+                    ->distinct()
+                    ->orderBy($value['column'])
+                    ->pluck($value['column'])
+                    ->toArray();
+            }
+        }
+
+        return $facetResults;
     }
 }
