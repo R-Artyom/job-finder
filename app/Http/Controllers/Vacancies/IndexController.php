@@ -225,7 +225,7 @@ class IndexController extends Controller
         $next = $vacanciesModels->isNotEmpty() && $hasMore ? $vacanciesModels->last()->id : null;
 
         // * Фасеты
-        $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
+//        $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
 
         // * Словари
         // Id работодателей (исключить пустые значения)
@@ -241,10 +241,10 @@ class IndexController extends Controller
         // Получить словари
         $dictionaries = $this->getDictionaries($ids);
 
-        // * Подсчёт общего количества записей
-        $countQuery = Vacancy::query();
-        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
-        $totalCount = $countQuery->count();
+//        // * Подсчёт общего количества записей
+//        $countQuery = Vacancy::query();
+//        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
+//        $totalCount = $countQuery->count();
 
         // * Ответ
         return [
@@ -262,13 +262,13 @@ class IndexController extends Controller
                     'publishedAt' => empty($vacancy->published_at) ? null : strtotime($vacancy->published_at),
                 ];
             }),
-            'filterOptions' => $facetResults,
+//            'filterOptions' => $facetResults,
             'dictionaries' => $dictionaries,
             'pagination' => [
                 'limit' => $limit,
                 'next' => $next,
             ],
-            'filteredElementsCount' => $totalCount,
+//            'filteredElementsCount' => $totalCount,
         ];
     }
 
