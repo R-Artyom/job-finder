@@ -6,8 +6,30 @@
             <thead class="bg-gray-100">
                 <tr>
                     <th class="border border-gray-400 px-1 py-2 w-16">№</th>
-                    <th class="border border-gray-400 px-1 py-2 w-64">Название</th>
-                    <th class="border border-gray-400 px-3 py-2 w-32">Работодатель</th>
+                    <th class="border border-gray-400 px-1 py-2 w-64">
+                        <div class="flex flex-col gap-1">
+                            <span>Название</span>
+                            <input
+                                type="text"
+                                v-model="nameFilter"
+                                @keyup.enter="getVacancies"
+                                placeholder="Поиск по названию"
+                                class="text-xs text-amber-700 placeholder-gray-400 bg-white border border-transparent focus:border-amber-700 focus:outline-none px-1 py-0.5"
+                            />
+                        </div>
+                    </th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">
+                        <div class="flex flex-col gap-1">
+                            <span>Работодатель</span>
+                            <input
+                                type="text"
+                                v-model="employerNameFilter"
+                                @keyup.enter="getVacancies"
+                                placeholder="Поиск по работодателю"
+                                class="text-xs text-amber-700 placeholder-gray-400 bg-white border border-transparent focus:border-amber-700 focus:outline-none px-1 py-0.5"
+                            />
+                        </div>
+                    </th>
                     <th class="border border-gray-400 px-1 py-2 w-32">Регион</th>
                     <th class="border border-gray-400 px-1 py-2 w-64">Описание</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП от</th>
@@ -65,6 +87,10 @@
                 employers: {},
                 // Регионы
                 areas: {},
+                // Фильтр по названию вакансии
+                nameFilter: '',
+                // Фильтр по названию работодателя
+                employerNameFilter: '',
             }
         },
 
@@ -74,15 +100,22 @@
 
         methods: {
             getVacancies() {
-                api.get('/vacancies')
-                    .then(res => {
-                        this.vacancies = res.data.data;
-                        this.employers = res.data.dictionaries?.employers || {};
-                        this.areas = res.data.dictionaries?.areas;
-                    })
-                    .catch(err => {
-                        console.error('Ошибка загрузки вакансий', err);
-                    });
+                api.get('/vacancies', {
+                    params: {
+                        filters: {
+                            name: this.nameFilter || undefined,
+                            employerName: this.employerNameFilter || undefined
+                        }
+                    }
+                })
+                .then(res => {
+                    this.vacancies = res.data.data;
+                    this.employers = res.data.dictionaries?.employers || {};
+                    this.areas = res.data.dictionaries?.areas || {};
+                })
+                .catch(err => {
+                    console.error('Ошибка загрузки вакансий', err);
+                });
             },
 
             // Очиста текста от тегов HTML, кроме тегов выделения текста
