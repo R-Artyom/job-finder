@@ -25,47 +25,52 @@ class IndexController extends Controller
         // Работодатель
         'employerId' => [
             'type' => 'in',
-            'column' => 'employer_id',
+            'column' => 'vacancies.employer_id',
         ],
         // Регион
         'areaId' => [
             'type' => 'in',
-            'column' => 'area_id',
+            'column' => 'vacancies.area_id',
         ],
         // Валюта
         'salaryCurrency' => [
             'type' => 'in',
-            'column' => 'salary_currency',
+            'column' => 'vacancies.salary_currency',
         ],
         // В архиве
         'archived' => [
             'type' => 'in',
-            'column' => 'archived',
+            'column' => 'vacancies.archived',
         ],
         // Название
         'name' => [
             'type' => 'like',
-            'column' => 'name',
+            'column' => 'vacancies.name',
         ],
         // Описание
         'description' => [
             'type' => 'like',
-            'column' => 'description',
+            'column' => 'vacancies.description',
+        ],
+        // Название работодателя
+        'employerName' => [
+            'type' => 'like',
+            'column' => 'employers.name',
         ],
         // Дата публикации
         'publishedAt' => [
             'type' => 'date',
-            'column' => 'published_at',
+            'column' => 'vacancies.published_at',
         ],
         // ЗП от
         'salaryFrom' => [
             'type' => 'from',
-            'column' => 'salary_from',
+            'column' => 'vacancies.salary_from',
         ],
         // ЗП до
         'salaryTo' => [
             'type' => 'to',
-            'column' => 'salary_to',
+            'column' => 'vacancies.salary_to',
         ],
     ];
 
@@ -111,6 +116,8 @@ class IndexController extends Controller
             'filters.name' => 'string',
             // Описание вакансии
             'filters.description' => 'string',
+            // Название работодателя
+            'filters.employerName' => 'string',
             // ЗП от
             'filters.salaryFrom' => 'integer',
             // ЗП до
@@ -166,27 +173,30 @@ class IndexController extends Controller
 
         // * Начальное значение построителя запроса
         $vacanciesBuilder = Vacancy::query()
+            ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
             ->select(
                 // №
-                'id',
+                'vacancies.id',
                 // Название
-                'name',
+                'vacancies.name',
                 // Работодатель
-                'employer_id',
+                'vacancies.employer_id',
                 // Регион
-                'area_id',
+                'vacancies.area_id',
                 // Описание
-                'description',
+                'vacancies.description',
                 // ЗП от
-                'salary_from',
+                'vacancies.salary_from',
                 // ЗП до
-                'salary_to',
+                'vacancies.salary_to',
                 // Валюта
-                'salary_currency',
+                'vacancies.salary_currency',
                 // В архиве
-                'archived',
+                'vacancies.archived',
                 // Опубликовано
-                'published_at',
+                'vacancies.published_at',
+                // Название работодателя
+                'employers.name as employerName',
             );
 
         // * Фильтрация
@@ -289,11 +299,13 @@ class IndexController extends Controller
                 // Удаление фильтра, для которого будет происходить поиск опций
                 unset($filtersForFacet[$key]);
                 // Формирование запроса
-                $query = Vacancy::query();
-                // Применить усеченные фильтьры
+                $query = Vacancy::query()
+                    ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
+                    ->select($value['column']);
+                // Применить усеченные фильтры
                 $this->applyFiltersToQuery($query, $filtersForFacet, self::FILTERS_FORMAT);
                 // Результат
-                $facetResults[$key] = $query->select($value['column'])
+                $facetResults[$key] = $query
                     ->distinct()
                     ->orderBy($value['column'])
                     ->pluck($value['column'])
