@@ -43,11 +43,34 @@
                 <tr v-for="vacancy in vacancies" :key="vacancy.id" class="hover:bg-gray-50">
                     <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.id }}</td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
-                        <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.name)" :title="cleanAllHtml(vacancy.name)"></div>
+                        <div class="flex items-center gap-1 overflow-hidden">
+                            <a
+                                :href="`https://hh.ru/vacancy/${vacancy.id}`"
+                                target="_blank"
+                                class="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded"
+                                style="background:#c5222a;color:#fff"
+                                title="Открыть вакансию на hh.ru"
+                            >
+                                hh.ru
+                            </a>
+                            <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.name)" :title="cleanAllHtml(vacancy.name)"></div>
+                        </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
-                        <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employerId]?.name ?? '—' ">
-                            {{ employers[vacancy.employerId]?.name ?? '—' }}
+                        <div class="flex items-center gap-1 overflow-hidden">
+                            <a
+                                v-if="vacancy.employerId"
+                                :href="`https://hh.ru/employer/${vacancy.employerId}`"
+                                target="_blank"
+                                class="flex-shrink-0 px-1.5 py-0.5 text-[10px] font-semibold rounded"
+                                style="background:#c5222a;color:#fff"
+                                title="Открыть работодателя на hh.ru"
+                            >
+                                hh.ru
+                            </a>
+                            <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employerId]?.name ?? '—'">
+                                {{ employers[vacancy.employerId]?.name ?? '—' }}
+                            </div>
                         </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
