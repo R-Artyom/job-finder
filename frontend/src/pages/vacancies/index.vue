@@ -31,6 +31,7 @@
                         </div>
                     </th>
                     <th class="border border-gray-400 px-1 py-2 w-32">Регион</th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">Страна</th>
                     <th class="border border-gray-400 px-1 py-2 w-64">Описание</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП от</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП до</th>
@@ -78,6 +79,11 @@
                             {{ areas[vacancy.areaId]?.name ?? '—' }}
                         </div>
                     </td>
+                    <td class="border border-gray-400 px-1 py-2 max-w-32">
+                        <div class="truncate whitespace-nowrap overflow-hidden" :title="countries[vacancy.countryId]?.name ?? '—' ">
+                            {{ countries[vacancy.countryId]?.name ?? '—' }}
+                        </div>
+                    </td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
                         <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.description)" :title="cleanAllHtml(vacancy.description)"></div>
                     </td>
@@ -110,6 +116,8 @@
                 employers: {},
                 // Регионы
                 areas: {},
+                // Страны
+                countries: {},
                 // Фильтр по названию вакансии
                 nameFilter: '',
                 // Фильтр по названию работодателя
@@ -135,6 +143,7 @@
                     this.vacancies = res.data.data;
                     this.employers = res.data.dictionaries?.employers || {};
                     this.areas = res.data.dictionaries?.areas || {};
+                    this.countries = res.data.dictionaries?.countries || {};
                 })
                 .catch(err => {
                     console.error('Ошибка загрузки вакансий', err);

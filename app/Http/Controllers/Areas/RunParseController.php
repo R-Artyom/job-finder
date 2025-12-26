@@ -14,6 +14,9 @@ class RunParseController extends Controller
     // Данные о регионах для записи в базу
     private array $areas = [];
 
+    // Данные о текущей стране при рекурсивной обработке данных
+    private ?int $countryId = null;
+
     /**
      * Парсер дерева регионов
      */
@@ -68,7 +71,7 @@ class RunParseController extends Controller
 
             // * Отсев регионов, в которых не изменились данные
             $currentAreasModels = Area::query()
-                ->select('id', 'parent_id', 'name', 'utc_offset', 'created_at')
+                ->select('id', 'parent_id', 'country_id', 'name', 'utc_offset', 'created_at')
                 ->get()
                 ->keyBy('id');
             foreach ($this->areas as $key => $area) {
@@ -80,6 +83,7 @@ class RunParseController extends Controller
                 // Существующую запись проверить на изменения
                 $changed =
                     $currentAreasModels[$id]->parent_id !== $area['parent_id'] ||
+                    $currentAreasModels[$id]->country_id !== $area['country_id'] ||
                     $currentAreasModels[$id]->name !== $area['name'] ||
                     $currentAreasModels[$id]->utc_offset !== $area['utc_offset'];
                 // Если изменений нет, то обновлять данные региона не надо
@@ -96,7 +100,7 @@ class RunParseController extends Controller
                 Area::query()->upsert(
                     $chunk,
                     ['id'], // Атрибут, по которому будет осуществляться поиск
-                    ['parent_id', 'name', 'utc_offset', 'updated_at'] // Атрибуты, которые будут обновляться
+                    ['parent_id', 'country_id', 'name', 'utc_offset', 'updated_at'] // Атрибуты, которые будут обновляться
                 );
             }
             // Возврат проверки внешних ключей
@@ -137,10 +141,15 @@ class RunParseController extends Controller
     {
         $currentDate = date('Y-m-d H:i:s');
         foreach ($areasTreeData as $area) {
+            // Если текущий регион является страной (корень дерева)
+            if (!isset($area['parent_id'])) {
+                $this->countryId = (int) $area['id'];
+            }
 
             $this->areas[] = [
                 'id' => (int) $area['id'],
                 'parent_id' => isset($area['parent_id']) ? (int) $area['parent_id'] : null ,
+                'country_id' => $this->countryId,
                 'name' => $area['name'],
                 'utc_offset' => $area['utc_offset'] ?? null,
                 'created_at' => $currentDate,

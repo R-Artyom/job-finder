@@ -72,6 +72,11 @@ class IndexController extends Controller
             'type' => 'to',
             'column' => 'vacancies.salary_to',
         ],
+        // Страна
+        'countryId' => [
+            'type' => 'in',
+            'column' => 'areas.country_id',
+        ],
     ];
 
     // Поля для сортировки
@@ -104,6 +109,9 @@ class IndexController extends Controller
             // Регион
             'filters.areaId' => 'array',
             'filters.areaId.*' => 'nullable|distinct|integer',
+            // Страна
+            'filters.countryId' => 'array',
+            'filters.countryId.*' => 'nullable|distinct|integer',
             // Валюта
             'filters.salaryCurrency' => 'array',
             'filters.salaryCurrency.*' => 'nullable|distinct|string',
@@ -174,6 +182,7 @@ class IndexController extends Controller
         // * Начальное значение построителя запроса
         $vacanciesBuilder = Vacancy::query()
             ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
+            ->leftJoin('areas', 'areas.id', 'vacancies.area_id')
             ->select(
                 // №
                 'vacancies.id',
@@ -197,6 +206,8 @@ class IndexController extends Controller
                 'vacancies.published_at',
                 // Название работодателя
                 'employers.name as employerName',
+                // Страна
+                'areas.country_id as countryId',
             );
 
         // * Фильтрация
@@ -248,6 +259,11 @@ class IndexController extends Controller
             $vacanciesModels->pluck('area_id')->filter()->all(),
             collect($facetResults['areaId'] ?? [])->filter()->all()
         ));
+        // Id стран (исключить пустые значения)
+        $ids['countries'] = array_unique(array_merge(
+            $vacanciesModels->pluck('countryId')->filter()->all(),
+            collect($facetResults['countryId'] ?? [])->filter()->all()
+        ));
         // Получить словари
         $dictionaries = $this->getDictionaries($ids);
 
@@ -264,6 +280,7 @@ class IndexController extends Controller
                     'name' => $vacancy->name,
                     'employerId' => $vacancy->employer_id,
                     'areaId' => $vacancy->area_id,
+                    'countryId' => $vacancy->countryId,
                     'description' => $vacancy->description,
                     'salaryFrom' => $vacancy->salary_from,
                     'salaryTo' => $vacancy->salary_to,

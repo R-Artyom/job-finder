@@ -257,6 +257,19 @@ class Controller extends BaseController
             }
         }
 
+        // Страны
+        if (!empty($ids['countries'])) {
+            $rows = DB::table('areas')
+                ->whereIn('id', $ids['countries'])
+                ->get();
+            foreach ($rows as $row) {
+                $dictionaries['countries'][$row->id] = [
+                    'id' => $row->id,
+                    'name' => $row->name
+                ];
+            }
+        }
+
         return $dictionaries;
     }
 }
