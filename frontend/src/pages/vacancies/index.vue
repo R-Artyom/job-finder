@@ -1,5 +1,16 @@
 <template>
     <div class="p-6">
+        <!-- Спиннер -->
+        <div v-if="loading" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+            <div class="flex items-center gap-3 bg-white px-6 py-4 rounded shadow">
+                <svg class="animate-spin h-5 w-5 text-orange-700" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+                <span class="font-semibold">Загрузка...</span>
+            </div>
+        </div>
+
         <h1 class="text-2xl font-bold mb-4">Список вакансий</h1>
 
         <table class="min-w-full border border-gray-400 border-collapse text-sm">
@@ -14,7 +25,7 @@
                                 v-model="nameFilter"
                                 @keyup.enter="getVacancies"
                                 placeholder="Поиск по названию"
-                                class="text-xs text-amber-700 placeholder-gray-400 bg-white border border-transparent focus:border-amber-700 focus:outline-none px-1 py-0.5"
+                                class="text-xs text-orange-700 placeholder-gray-400 bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5"
                             />
                         </div>
                     </th>
@@ -26,7 +37,7 @@
                                 v-model="employerNameFilter"
                                 @keyup.enter="getVacancies"
                                 placeholder="Поиск по работодателю"
-                                class="text-xs text-amber-700 placeholder-gray-400 bg-white border border-transparent focus:border-amber-700 focus:outline-none px-1 py-0.5"
+                                class="text-xs text-orange-700 placeholder-gray-400 bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5"
                             />
                         </div>
                     </th>
@@ -122,6 +133,8 @@
                 nameFilter: '',
                 // Фильтр по названию работодателя
                 employerNameFilter: '',
+                // Спиннер загрузки
+                loading: false,
             }
         },
 
@@ -131,6 +144,8 @@
 
         methods: {
             getVacancies() {
+                this.loading = true;
+
                 api.get('/vacancies', {
                     params: {
                         filters: {
@@ -147,6 +162,9 @@
                 })
                 .catch(err => {
                     console.error('Ошибка загрузки вакансий', err);
+                })
+                .finally(() => {
+                    this.loading = false;
                 });
             },
 
