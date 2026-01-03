@@ -28,25 +28,26 @@ class RunParseController extends Controller
         if ($counter->status === 'run' && $vacancyId < $counter->limit) {
             // Счетчик занят
             $counter->status = 'busy';
-            $counter->update(['value' => $vacancyId]);
+            $counter->save();
 
             // Начать отсчет времени
             $startTime = microtime(true);
             // Промежуточная отметка времени
             $fixedTime = microtime(true);
 
-            // Повторять считывание вакансий в течение 55 сек
-            while ($fixedTime - $startTime < 55) {
-                // Задержка от 30 мс до 70 мс
-                usleep(rand(30000, 70000));
+            // Повторять считывание вакансий в течение 55 сек, если счетчик не достиг предела
+            while ($fixedTime - $startTime < 55 && $vacancyId < $counter->limit) {
+                // Если ещё нет такой вакансии в базе MySql
+                if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
+                    // Задержка от 30 мс до 70 мс - частые ошибки 403
+                    // Задержка от 250 мс до 300 мс
+                    usleep(rand(250000, 300000));
 
-                // Блок для выброса исключений
-                try {
-                    // Создание транзакции
-                    DB::beginTransaction();
+                    // Блок для выброса исключений
+                    try {
+                        // Создание транзакции
+                        DB::beginTransaction();
 
-                    // Если ещё нет такой вакансии в базе MySql
-                    if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                         // Запрос данных о вакансии
                         $response = Http::get("https://api.hh.ru/vacancies/$vacancyId");
                         if ($response->successful()) {
@@ -75,58 +76,75 @@ class RunParseController extends Controller
                             // Запись данных о вакансии
                             (new StoreController)($vacancyData);
                         }
-                    }
-                    // Инкремент счетчика с сохранением в базе
-                    $vacancyId++;
-                    $counter->update(['value' => $vacancyId]);
 
-                    // Фиксирование транзакции
-                    if ($vacancyId < $counter->limit) {
+                        // Инкремент счетчика
+                        $vacancyId++;
+                        $counter->value = $vacancyId;
+                        $counter->save();
+
+                        // Фиксирование транзакции
                         DB::commit();
-                    // Достигнут предел счетчика
-                    } else {
-                        // Счетчик свободен
-                        $counter->status = 'run';
-                        $counter->update(['value' => $vacancyId]);
-                        DB::commit();
-                        return;
-                    }
 
-                // Блок перехвата исключений
-                } catch (ConnectionException $e) {
-                    // Откат транзакции
-                    DB::rollBack();
-                    logger()->error('🟡 Ошибка соединения ' . '(' . route('vacancies.run') . ')',
-                        [
-                            'vacancyId' => $vacancyId,
-                            'message' => $e->getMessage()
-                        ]
-                    );
-                    $notifications[] = ['🟡 Ошибка соединения', $e->getMessage()];
-                } catch (\Exception $e) {
-                    // Откат транзакции
-                    DB::rollBack();
-                    $counter->update(['status' => 'error']);
-                    // Логирование в файл
-                    logger()->error('🔴 Ошибка общая ' . '(' . route('vacancies.run') . ')',
-                        [
-                            'vacancyId' => $vacancyId,
-                            'error' => $e->getMessage(),
-                        ]
-                    );
-                    $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
-                    break;
+                    // Блок перехвата исключений
+                    } catch (ConnectionException $e) {
+                        // Откат транзакции
+                        DB::rollBack();
+                        logger()->error('🟡 Ошибка соединения ' . '(' . route('vacancies.run') . ')',
+                            [
+                                'vacancyId' => $vacancyId,
+                                'message' => $e->getMessage()
+                            ]
+                        );
+                        $notifications[] = ['🟡 Ошибка соединения', $e->getMessage()];
+                    } catch (\Exception $e) {
+                        // Откат транзакции
+                        DB::rollBack();
+                        $counter->update(['status' => 'error']);
+                        // Логирование в файл
+                        logger()->error('🔴 Ошибка общая ' . '(' . route('vacancies.run') . ')',
+                            [
+                                'vacancyId' => $vacancyId,
+                                'error' => $e->getMessage(),
+                            ]
+                        );
+                        $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
+                        break;
 
-                } finally {
-                    // Каждые 100000 отчёт
-                    if ($vacancyId % 100000 === 0) {
-                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                    } finally {
+                        // Каждые 100000 отчёт
+                        if ($vacancyId % 100000 === 0) {
+                            $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                        }
+
+                        // Достигнут предел счетчика
+                        if ($vacancyId >= $counter->limit) {
+                            $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
+                            $counter->status = 'run';
+                            $counter->save();
+                        }
                     }
+                }
+                // Инкремент счетчика
+                $vacancyId++;
+                $counter->value = $vacancyId;
+                $counter->save();
+
+                // Каждые 100000 отчёт
+                if ($vacancyId % 100000 === 0) {
+                    $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                }
+
+                // Достигнут предел счетчика
+                if ($vacancyId >= $counter->limit) {
+                    $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
+                    $counter->status = 'run';
+                    $counter->save();
                 }
 
                 // Фиксировать отметку времени
                 $fixedTime = microtime(true);
             }
+
             // Если скрипт выполнялся дольше минуты
             if ($fixedTime - $startTime > 60) {
                 $scryptTime = $fixedTime - $startTime;
@@ -138,7 +156,7 @@ class RunParseController extends Controller
             // Счетчик свободен, если не было ошибок
             if ($counter->status !== 'error') {
                 $counter->status = 'run';
-                $counter->update(['value' => $vacancyId]);
+                $counter->save();
             }
 
             // Отправка уведомлений
