@@ -71,6 +71,7 @@ class RunParseController extends Controller
                                                 (new EmployersStoreController)(['id' => $employerId]);
                                             // 400 и остальные - Неправильный запрос и другое
                                             } else {
+                                                $counter->status = 'error';
                                                 throw new \Exception('Employer API error: ' . $response->body());
                                             }
                                         }
@@ -89,6 +90,7 @@ class RunParseController extends Controller
                                 throw new \Exception('Vacancy API error 403: ' . $response->body());
                             // 400 и остальные - Неправильный запрос и другое
                             } else {
+                                $counter->status = 'error';
                                 throw new \Exception('Vacancy API error 400: ' . $response->body());
                             }
                         }
@@ -115,7 +117,6 @@ class RunParseController extends Controller
                     } catch (\Exception $e) {
                         // Откат транзакции
                         DB::rollBack();
-                        $counter->update(['status' => 'error']);
                         // Логирование в файл
                         logger()->error('🔴 Ошибка общая ' . '(' . route('vacancies.run') . ')',
                             [
@@ -174,8 +175,8 @@ class RunParseController extends Controller
             // Счетчик свободен, если не было ошибок
             if ($counter->status !== 'error') {
                 $counter->status = 'run';
-                $counter->save();
             }
+            $counter->save();
 
             // Отправка уведомлений
             if (isset($notifications)) {
