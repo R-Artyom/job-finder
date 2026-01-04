@@ -40,8 +40,8 @@ class RunParseController extends Controller
                 // Если ещё нет такой вакансии в базе MySql
                 if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                     // Задержка от 30 мс до 70 мс - частые ошибки 403
-                    // Задержка от 250 мс до 300 мс
-                    usleep(rand(250000, 300000));
+                    // Задержка от 200 мс до 250 мс
+                    usleep(rand(200000, 250000));
 
                     // Блок для выброса исключений
                     try {
@@ -64,8 +64,14 @@ class RunParseController extends Controller
                                         if ($response->successful()) {
                                             (new EmployersStoreController)($data);
                                         } else {
-                                            // Если в базе hh нет такого работодателя, то пустая запись
-                                            (new EmployersStoreController)(['id' => $employerId]);
+                                            // 404 - Работодатель отсутствует
+                                            if ($response->status() === 404) {
+                                                // Если в базе hh нет такого работодателя, то пустая запись, чтобы не нарушать ссылки на внешние ключи
+                                                (new EmployersStoreController)(['id' => $employerId]);
+                                            // 400 и остальные - Неправильный запрос и другое
+                                            } else {
+                                                throw new \Exception('Employer API error: ' . $response->body());
+                                            }
                                         }
                                     }
                                 }
@@ -75,6 +81,15 @@ class RunParseController extends Controller
 
                             // Запись данных о вакансии
                             (new StoreController)($vacancyData);
+                        // 404 - Вакансия отсутствует, увеличиваем счетчик и идём дальше
+                        } elseif ($response->status() !== 404) {
+                            // 403 - Ошибка доступа к данным (частые запросы)
+                            if ($response->status() === 403) {
+                                throw new \Exception('Vacancy API error 403: ' . $response->body());
+                            // 400 и остальные - Неправильный запрос и другое
+                            } else {
+                                throw new \Exception('Vacancy API error 400: ' . $response->body());
+                            }
                         }
 
                         // Инкремент счетчика
@@ -123,22 +138,24 @@ class RunParseController extends Controller
                             $counter->save();
                         }
                     }
-                }
-                // Инкремент счетчика
-                $vacancyId++;
-                $counter->value = $vacancyId;
-                $counter->save();
-
-                // Каждые 100000 отчёт
-                if ($vacancyId % 100000 === 0) {
-                    $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
-                }
-
-                // Достигнут предел счетчика
-                if ($vacancyId >= $counter->limit) {
-                    $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
-                    $counter->status = 'run';
+                // В базе MySql уже есть такая вакансия
+                } else {
+                    // Инкремент счетчика
+                    $vacancyId++;
+                    $counter->value = $vacancyId;
                     $counter->save();
+
+                    // Каждые 100000 отчёт
+                    if ($vacancyId % 100000 === 0) {
+                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                    }
+
+                    // Достигнут предел счетчика
+                    if ($vacancyId >= $counter->limit) {
+                        $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
+                        $counter->status = 'run';
+                        $counter->save();
+                    }
                 }
 
                 // Фиксировать отметку времени
