@@ -81,9 +81,9 @@ class IndexController extends Controller
 
     // Поля для сортировки
     const SORT_FIELD = [
-        'id' => 'id',
-        'publishedAt' => 'published_at',
-        'name' => 'name',
+        'id' => 'vacancies.id',
+        'publishedAt' => 'vacancies.published_at',
+        'name' => 'vacancies.name',
     ];
 
     /**
@@ -174,7 +174,7 @@ class IndexController extends Controller
         // Сортировка по умолчанию
         if (empty($sort)) {
             $sort[0] = [
-                'field' => 'id',
+                'field' => self::SORT_FIELD['id'],
                 'order' => 'desc',
             ];
         }
@@ -217,7 +217,7 @@ class IndexController extends Controller
         if ($next !== null) {
             // Последняя (граничная) запись на текущей странице
             $pivot = Vacancy::query()
-                ->select('id', 'published_at', 'name')
+                ->select('id as vacancies.id', 'published_at as vacancies.published_at', 'name as vacancies.name')
                 ->where('id', $next)
                 ->first();
             // Если эта запись существует, то найти все записи, идущие за ней (в соответствии с сортировкой)

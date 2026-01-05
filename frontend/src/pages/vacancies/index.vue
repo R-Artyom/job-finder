@@ -23,7 +23,7 @@
                             <input
                                 type="text"
                                 v-model="nameFilter"
-                                @keyup.enter="getVacancies"
+                                @keyup.enter="getVacancies(true)"
                                 placeholder="Поиск по названию"
                                 class="text-xs text-orange-700 placeholder-gray-400 bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5"
                             />
@@ -35,7 +35,7 @@
                             <input
                                 type="text"
                                 v-model="employerNameFilter"
-                                @keyup.enter="getVacancies"
+                                @keyup.enter="getVacancies(true)"
                                 placeholder="Поиск по работодателю"
                                 class="text-xs text-orange-700 placeholder-gray-400 bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5"
                             />
@@ -108,6 +108,31 @@
                         <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.publishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
                     </td>
                 </tr>
+
+                <!-- Индикатор догрузки страниц-->
+                <tr v-if="isLoadingMore">
+                    <td colspan="11" class="py-2">
+                        <div class="flex justify-center items-center gap-2 text-gray-400">
+                            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity="0.25"/>
+                                <path d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" fill="currentColor" opacity="0.75"/>
+                            </svg>
+                            Загрузка ещё…
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Конец списка -->
+                <tr v-if="next === null && vacancies.length && !loading && !isLoadingMore">
+                    <td colspan="11" class="text-center py-2 text-gray-400">
+                        Больше вакансий нет
+                    </td>
+                </tr>
+
+                <!-- якорь для IntersectionObserver -->
+                <tr ref="loadMoreTrigger">
+                    <td colspan="11" class="h-1"></td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -135,19 +160,75 @@
                 employerNameFilter: '',
                 // Спиннер загрузки
                 loading: false,
+                // Параметры пагинации
+                next: null,
+                isLoadingMore: false,
+                observer: null,
             }
         },
 
         mounted() {
-            this.getVacancies();
+            this.getVacancies(true);
+
+            // Объект, который следит за пересечением наблюдаемого элемента и области видимости (root) для запуска подгрузки новой страницы
+            this.observer = new IntersectionObserver(
+                entries => {
+                    // Если элемент попал в зону наблюдения
+                    if (entries[0].isIntersecting) {
+                        this.getVacancies();
+                    }
+                },
+                {
+                    // viewport браузера, наблюдаем пересечение с окном страницы
+                    root: null,
+                    // Начинать грузить заранеена 200 пикс до скрытого элемента
+                    rootMargin: '200px',
+                    // Срабатывает, как только 1 пиксель элемента попал в зону
+                    threshold: 0,
+                }
+            );
+
+            // Браузер начинает следить за объектом после того, как Vue обновит DOM, при пересечении вызывает callback объекта
+            this.$nextTick(() => {
+                if (this.$refs.loadMoreTrigger) {
+                    this.observer.observe(this.$refs.loadMoreTrigger);
+                }
+            });
+        },
+
+        beforeUnmount() {
+            this.observer?.disconnect();
         },
 
         methods: {
-            getVacancies() {
-                this.loading = true;
+            getVacancies(reset = false) {
+                // Защиты от повторного вызова (IntersectionObserver может вызывать callback несколько раз, пока элемент в зоне)
+                if (this.loading || this.isLoadingMore) {
+                    return;
+                }
+
+                // Сброс фильтров и т.п.
+                if (reset) {
+                    this.vacancies = [];
+                    this.next = null;
+                // Если это непервый запрос и больше страниц нет — дальше грузить нельзя
+                } else if (this.next === null) {
+                    return;
+                }
+
+                // Отключаем observer на время запроса
+                if (this.$refs.loadMoreTrigger) {
+                    this.observer?.unobserve(this.$refs.loadMoreTrigger);
+                }
+
+                // Индикатор загрузки страницы с нуля
+                this.loading = this.next === null;
+                // Индикатор подгрузки новой страницы
+                this.isLoadingMore = this.next !== null;
 
                 api.get('/vacancies', {
                     params: {
+                        next: this.next ?? undefined,
                         filters: {
                             name: this.nameFilter || undefined,
                             employerName: this.employerNameFilter || undefined
@@ -155,20 +236,48 @@
                     }
                 })
                 .then(res => {
-                    this.vacancies = res.data.data;
-                    this.employers = res.data.dictionaries?.employers || {};
-                    this.areas = res.data.dictionaries?.areas || {};
-                    this.countries = res.data.dictionaries?.countries || {};
+                    const data = res.data.data;
+
+                    // Добавляем данные новой страницы, а не перезаписываем
+                    this.vacancies.push(...data);
+                    this.employers = {
+                        ...this.employers,
+                        ...(res.data.dictionaries?.employers || {})
+                    };
+                    this.areas = {
+                        ...this.areas,
+                        ...(res.data.dictionaries?.areas || {})
+                    };
+                    this.countries = {
+                        ...this.countries,
+                        ...(res.data.dictionaries?.countries || {})
+                    };
+
+                    // Флаг конца данных
+                    this.next = res.data.pagination?.next ?? null;
+
+                    // Если страницы ещё есть — снова включаем observer
+                    if (this.next !== null) {
+                        this.$nextTick(() => {
+                            if (this.$refs.loadMoreTrigger) {
+                                this.observer?.observe(this.$refs.loadMoreTrigger);
+                            }
+                        });
+                    } else {
+                        // Если страниц больше нет — отключаем навсегда
+                        this.observer?.disconnect();
+                    }
                 })
                 .catch(err => {
                     console.error('Ошибка загрузки вакансий', err);
                 })
                 .finally(() => {
                     this.loading = false;
+                    this.isLoadingMore = false;
                 });
             },
 
-            // Очиста текста от тегов HTML, кроме тегов выделения текста
+            // Очистка текста от тегов HTML, кроме тегов выделения текста
             cleanHtml(html) {
                 if (!html) return '';
 
