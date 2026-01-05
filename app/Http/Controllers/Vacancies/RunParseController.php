@@ -13,11 +13,14 @@ use Illuminate\Support\Facades\DB;
 
 class RunParseController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
+    // Данные для логирования
+    private array $loggerContext = [];
+
     public function __invoke()
     {
+        // Полное имя текущего контроллера с namespace
+        $routeAction = get_class($this);
+
         // Получаем текущий счетчик или создаем его, если не существует
         $counter = Counter::query()->firstOrCreate(
             ['name' => 'vacancyId'],
@@ -41,8 +44,9 @@ class RunParseController extends Controller
                 if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                     // Задержка от 30 мс до 70 мс - частые ошибки 403
                     // Задержка от 200 мс до 250 мс - частые ошибки 403
-                    // Задержка от 300 мс до 350 мс
-                    usleep(rand(300000, 350000));
+                    // Задержка от 300 мс до 350 мс - днём частые ошибки 403
+                    // Задержка от 400 мс до 410 мс
+                    usleep(rand(400000, 410000));
 
                     // Блок для выброса исключений
                     try {
@@ -72,7 +76,14 @@ class RunParseController extends Controller
                                             // 400 и остальные - Неправильный запрос и другое
                                             } else {
                                                 $counter->status = 'error';
-                                                throw new \Exception('Employer API error: ' . $response->body());
+                                                // Контекст для лога
+                                                $this->loggerContext = [
+                                                    'vacancyId' => $vacancyId,
+                                                    'interval' => microtime(true) - $fixedTime,
+                                                    'status' => $response->status(),
+                                                    'response' => $response->body(),
+                                                ];
+                                                throw new \Exception('Employer API error ' . $response->status());
                                             }
                                         }
                                     }
@@ -85,13 +96,20 @@ class RunParseController extends Controller
                             (new StoreController)($vacancyData);
                         // 404 - Вакансия отсутствует, увеличиваем счетчик и идём дальше
                         } elseif ($response->status() !== 404) {
+                            // Контекст для лога
+                            $this->loggerContext = [
+                                'vacancyId' => $vacancyId,
+                                'interval' => microtime(true) - $fixedTime,
+                                'status' => $response->status(),
+                                'response' => $response->body(),
+                            ];
                             // 403 - Ошибка доступа к данным (частые запросы)
                             if ($response->status() === 403) {
-                                throw new \Exception('Vacancy API error 403: ' . $response->body());
+                                throw new \Exception('Vacancy API error 403');
                             // 400 и остальные - Неправильный запрос и другое
                             } else {
                                 $counter->status = 'error';
-                                throw new \Exception('Vacancy API error 400: ' . $response->body());
+                                throw new \Exception('Vacancy API error ' . $response->status());
                             }
                         }
 
@@ -107,7 +125,7 @@ class RunParseController extends Controller
                     } catch (ConnectionException $e) {
                         // Откат транзакции
                         DB::rollBack();
-                        logger()->error('🟡 Ошибка соединения ' . '(' . route('vacancies.run') . ')',
+                        logger()->error('🟡 Ошибка соединения ' . $routeAction,
                             [
                                 'vacancyId' => $vacancyId,
                                 'message' => $e->getMessage()
@@ -118,12 +136,9 @@ class RunParseController extends Controller
                         // Откат транзакции
                         DB::rollBack();
                         // Логирование в файл
-                        logger()->error('🔴 Ошибка общая ' . '(' . route('vacancies.run') . ')',
-                            [
-                                'vacancyId' => $vacancyId,
-                                'error' => $e->getMessage(),
-                            ]
-                        );
+                        logger()->error('🔴 Ошибка общая ' . $routeAction . ' ' . $e->getMessage(), $this->loggerContext);
+                        $this->loggerContext = [];
+                        // Уведомление
                         $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
                         break;
 
@@ -168,7 +183,7 @@ class RunParseController extends Controller
             if ($fixedTime - $startTime > 60) {
                 $scryptTime = $fixedTime - $startTime;
                 // Логирование в файл
-                logger()->error("Время выполнения скрипта $scryptTime сек " . '(' . route('vacancies.run') . ')');
+                logger()->error("Время выполнения скрипта $scryptTime сек " . $routeAction);
                 $notifications[] = ['⚪️ Отчёт', "Время выполнения скрипта $scryptTime сек", "vacancyId = $vacancyId"];
             }
 
