@@ -121,11 +121,11 @@ class IndexController extends Controller
 
             // * Фильтры без опций:
             // Название вакансии
-            'filters.name' => 'string',
+            'filters.name' => 'string|min:3',
             // Описание вакансии
-            'filters.description' => 'string',
+            'filters.description' => 'string|min:3',
             // Название работодателя
-            'filters.employerName' => 'string',
+            'filters.employerName' => 'string|min:3',
             // ЗП от
             'filters.salaryFrom' => 'integer',
             // ЗП до
@@ -246,6 +246,20 @@ class IndexController extends Controller
         $next = $vacanciesModels->isNotEmpty() && $hasMore ? $vacanciesModels->last()->id : null;
 
         // * Фасеты
+        $facetResults = [];
+        // TODO раскомментировать, если надо работать с фасетами только после ввода текстовых фильтров
+//        // Добавлять только в случае наличия хотя бы одного фильтра 'like'. При наличии фильтра 'description' нужен ещё один фильтр
+//        if ($filters) {
+//            foreach ($filters as $filterName => $filter) {
+//                if (self::FILTERS_FORMAT[$filterName]['type'] === 'like') {
+//                    if ($filterName === 'description' && count($filters) <= 1) {
+//                        break;
+//                    }
+//                    $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
+//                }
+//            }
+//        }
+        // TODO раскомментировать, когда решится проблема работы с фасетами при 50 млн вакансий
 //        $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
 
         // * Словари
@@ -267,11 +281,6 @@ class IndexController extends Controller
         // Получить словари
         $dictionaries = $this->getDictionaries($ids);
 
-//        // * Подсчёт общего количества записей
-//        $countQuery = Vacancy::query();
-//        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
-//        $totalCount = $countQuery->count();
-
         // * Ответ
         return [
             'data' => $vacanciesModels->values()->map(function ($vacancy) {
@@ -289,13 +298,12 @@ class IndexController extends Controller
                     'publishedAt' => empty($vacancy->published_at) ? null : strtotime($vacancy->published_at),
                 ];
             }),
-//            'filterOptions' => $facetResults,
+            'filterOptions' => $facetResults,
             'dictionaries' => $dictionaries,
             'pagination' => [
                 'limit' => $limit,
                 'next' => $next,
             ],
-//            'filteredElementsCount' => $totalCount,
         ];
     }
 
@@ -318,6 +326,7 @@ class IndexController extends Controller
                 // Формирование запроса
                 $query = Vacancy::query()
                     ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
+                    ->leftJoin('areas', 'areas.id', 'vacancies.area_id')
                     ->select($value['column']);
                 // Применить усеченные фильтры
                 $this->applyFiltersToQuery($query, $filtersForFacet, self::FILTERS_FORMAT);
