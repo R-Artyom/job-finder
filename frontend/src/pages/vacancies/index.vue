@@ -39,15 +39,63 @@
                                 placeholder="Поиск по работодателю"
                                 class="text-xs text-orange-700 placeholder-gray-400 bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5"
                             />
+                            <FacetDropdown
+                                v-if="hasFacet('employerId')"
+                                v-model="selectedFilters.employerId"
+                                :options="filterOptions.employerId"
+                                :dictionary="employers"
+                                placeholder="Работодатель"
+                                @change="applyFilters"
+                            />
                         </div>
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">Регион</th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">Страна</th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">
+                        <span>Регион</span>
+                        <FacetDropdown
+                            v-if="hasFacet('areaId')"
+                            v-model="selectedFilters.areaId"
+                            :options="filterOptions.areaId"
+                            :dictionary="areas"
+                            placeholder="Регион"
+                            @change="applyFilters"
+                        />
+                    </th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">
+                        <span>Страна</span>
+                        <FacetDropdown
+                            v-if="hasFacet('countryId')"
+                            v-model="selectedFilters.countryId"
+                            :options="filterOptions.countryId"
+                            :dictionary="countries"
+                            placeholder="Страна"
+                            @change="applyFilters"
+                        />
+                    </th>
                     <th class="border border-gray-400 px-1 py-2 w-64">Описание</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП от</th>
                     <th class="border border-gray-400 px-1 py-2 w-24">ЗП до</th>
-                    <th class="border border-gray-400 px-1 py-2 w-20">Валюта</th>
-                    <th class="border border-gray-400 px-1 py-2 w-24">В архиве</th>
+                    <th class="border border-gray-400 px-1 py-2 w-20">
+                        <span>Валюта</span>
+                        <FacetDropdown
+                            v-if="hasFacet('salaryCurrency')"
+                            v-model="selectedFilters.salaryCurrency"
+                            :options="filterOptions.salaryCurrency"
+                            placeholder="Валюта"
+                            @change="applyFilters"
+                        />
+                    </th>
+                    <th class="border border-gray-400 px-1 py-2 w-24">
+                        <span>В архиве</span>
+                        <FacetDropdown
+                            v-if="hasFacet('archived')"
+                            v-model="selectedFilters.archived"
+                            :options="filterOptions.archived"
+                            :label-map="{ 1: 'Да' }"
+                            null-label="Нет"
+                            placeholder="В архиве"
+                            @change="applyFilters"
+                        />
+                    </th>
                     <th class="border border-gray-400 px-1 py-2 w-32">Опубликовано</th>
                 </tr>
             </thead>
@@ -140,9 +188,14 @@
 
 <script>
     import api from '../../axios.js';
+    import FacetDropdown from '../../components/FacetDropdown.vue';
 
     export default {
         name: "index",
+
+        components: {
+            FacetDropdown
+        },
 
         data() {
             return {
@@ -164,6 +217,15 @@
                 next: null,
                 isLoadingMore: false,
                 observer: null,
+                // Фасеты
+                filterOptions: {},
+                selectedFilters: {
+                    employerId: [],
+                    areaId: [],
+                    countryId: [],
+                    salaryCurrency: [],
+                    archived: [],
+                },
             }
         },
 
@@ -230,8 +292,30 @@
                     params: {
                         next: this.next ?? undefined,
                         filters: {
+                            // Текстовые фильтры
                             name: this.nameFilter || undefined,
-                            employerName: this.employerNameFilter || undefined
+                            employerName: this.employerNameFilter || undefined,
+
+                            // Фильтры по значению
+                            employerId: this.selectedFilters.employerId.length
+                                ? this.selectedFilters.employerId
+                                : undefined,
+
+                            areaId: this.selectedFilters.areaId.length
+                                ? this.selectedFilters.areaId
+                                : undefined,
+
+                            countryId: this.selectedFilters.countryId.length
+                                ? this.selectedFilters.countryId
+                                : undefined,
+
+                            salaryCurrency: this.selectedFilters.salaryCurrency.length
+                                ? this.selectedFilters.salaryCurrency
+                                : undefined,
+
+                            archived: this.selectedFilters.archived.length
+                                ? this.selectedFilters.archived
+                                : undefined,
                         }
                     }
                 })
@@ -267,6 +351,9 @@
                         // Если страниц больше нет — отключаем навсегда
                         this.observer?.disconnect();
                     }
+
+                    // Фасеты (опции фильтрации)
+                    this.filterOptions = res.data.filterOptions || {};
                 })
                 .catch(err => {
                     console.error('Ошибка загрузки вакансий', err);
@@ -344,7 +431,16 @@
                     minute: '2-digit',
                     second: '2-digit'
                 });
-            }
+            },
+
+            hasFacet(key) {
+                return Array.isArray(this.filterOptions?.[key])
+                    && this.filterOptions[key].length > 0;
+            },
+
+            applyFilters() {
+                this.getVacancies(true);
+            },
         }
     }
 </script>
