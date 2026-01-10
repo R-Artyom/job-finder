@@ -281,6 +281,11 @@ class IndexController extends Controller
         // Получить словари
         $dictionaries = $this->getDictionaries($ids);
 
+//        // * Подсчёт общего количества записей
+//        $countQuery = Vacancy::query();
+//        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
+//        $totalCount = $countQuery->count();
+
         // * Ответ
         return [
             'data' => $vacanciesModels->values()->map(function ($vacancy) {
@@ -304,6 +309,7 @@ class IndexController extends Controller
                 'limit' => $limit,
                 'next' => $next,
             ],
+//            'filteredElementsCount' => $totalCount,
         ];
     }
 
