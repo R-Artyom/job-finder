@@ -7,6 +7,7 @@ use App\Http\Controllers\Employers\StoreController as EmployersStoreController;
 use App\Models\Counter;
 use App\Models\Employer;
 use App\Models\Vacancy;
+use Carbon\Carbon;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +29,55 @@ class RunParseController extends Controller
         );
         $vacancyId = $counter->value;
 
+        // * Обновление лимита счетчика вакансий
+        if ($counter->status === 'run') {
+            // Счетчик занят
+            $counter->status = 'busy';
+            $counter->save();
+            // Параметры запроса вакансий
+            $params = [
+                'page' => 0,
+                // Дата за минуту до текущей в формате <2026-01-10T02:59:00> по МСК
+                'date_from' => Carbon::now('Europe/Moscow')->subMinute()->format('Y-m-d\TH:i:s'),
+                // Текущая дата в формате <2026-01-10T03:00:00> по МСК
+                'date_to' => Carbon::now('Europe/Moscow')->format('Y-m-d\TH:i:s'),
+                'order_by' => 'publication_time',
+                'per_page' => 1,
+            ];
+
+            try {
+                // Ограничение времени на установку соединения до 1 секунды и общего времени соединения до 2 секунд
+                $response = Http::connectTimeout(1)
+                    ->timeout(2)
+                    ->get('https://api.hh.ru/vacancies', $params);
+                if ($response->successful()) {
+                    $data = $response->json();
+                    // Новое значение счетчика
+                    if (!empty($data['items'][0]['id']) && $counter->limit < $data['items'][0]['id']) {
+                        $counter->limit = $data['items'][0]['id'];
+                        $counter->save();
+                    }
+                } else {
+                    // Обработка HTTP ошибок
+                    logger()->warning('Counter API HTTP error', [
+                        'status' => $response->status(),
+                        'body' => $response->body(),
+                        'url' => "https://api.hh.ru/vacancies?&page=0&date_from={$params['date_from']}&date_to={$params['date_to']}&order_by=publication_time&per_page=1",
+                    ]);
+                }
+            } catch (\Exception $e) {
+                logger()->error('Counter API general error', [
+                    'error' => $e->getMessage(),
+                    'params' => $params,
+                    'url' => "https://api.hh.ru/vacancies?&page=0&date_from={$params['date_from']}&date_to={$params['date_to']}&order_by=publication_time&per_page=1",
+                ]);
+            }
+            // Счетчик свободен
+            $counter->status = 'run';
+            $counter->save();
+        }
+
+        // * Считывание вакансий
         if ($counter->status === 'run' && $vacancyId < $counter->limit) {
             // Счетчик занят
             $counter->status = 'busy';
