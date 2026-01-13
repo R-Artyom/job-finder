@@ -96,8 +96,9 @@ class RunParseController extends Controller
                     // Задержка от 200 мс до 250 мс - частые ошибки 403
                     // Задержка от 300 мс до 350 мс - днём частые ошибки 403
                     // Задержка от 400 мс до 410 мс - норм
-                    // Задержка от 340 мс до 350 мс
-                    usleep(rand(340000, 350000));
+                    // Задержка от 340 мс до 350 мс - норм в выходные и праздники
+                    // Задержка от 360 мс до 370 мс
+                    usleep(rand(360000, 370000));
 
                     // Блок для выброса исключений
                     try {
@@ -155,13 +156,11 @@ class RunParseController extends Controller
                                 'response' => $response->body(),
                             ];
                             // 403 - Ошибка доступа к данным (частые запросы)
-                            if ($response->status() === 403) {
-                                throw new \Exception('Vacancy API error 403');
-                            // 400 и остальные - Неправильный запрос и другое
-                            } else {
+                            // 502 - Сервер перегружен из-за высокого трафика
+                            if ($response->status() !== 403 && $response->status() !== 502) {
                                 $counter->status = 'error';
-                                throw new \Exception('Vacancy API error ' . $response->status());
                             }
+                            throw new \Exception('Vacancy API error ' . $response->status());
                         }
 
                         // Инкремент счетчика
