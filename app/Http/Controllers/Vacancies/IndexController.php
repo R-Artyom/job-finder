@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Vacancies;
 
 use App\Http\Controllers\Controller;
+use App\Models\Counter;
 use App\Models\Vacancy;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -281,6 +282,11 @@ class IndexController extends Controller
         // Получить словари
         $dictionaries = $this->getDictionaries($ids);
 
+        // * Id последней вакансии
+        $lastElementId = Counter::query()
+            ->where('name','vacancyId')
+            ->value('limit');
+
 //        // * Подсчёт общего количества записей
 //        $countQuery = Vacancy::query();
 //        $this->applyFiltersToQuery($countQuery, $filters, self::FILTERS_FORMAT);
@@ -309,6 +315,7 @@ class IndexController extends Controller
                 'limit' => $limit,
                 'next' => $next,
             ],
+            'lastElementId' => $lastElementId,
 //            'filteredElementsCount' => $totalCount,
         ];
     }

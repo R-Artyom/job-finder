@@ -11,6 +11,25 @@
             </div>
         </div>
 
+        <!-- № последней вакансии -->
+        <div
+            v-if="lastElementId"
+            title="Максимальный ID вакансии в базе"
+            class="fixed top-4 right-4 z-40 bg-white/90 backdrop-blur border border-orange-700 rounded-lg px-4 py-2 shadow text-sm text-gray-700 flex items-center gap-2"
+        >
+            <span class="text-gray-400">№ последней вакансии:</span>
+            <span class="font-semibold text-orange-700">
+                <a
+                    :href="`https://hh.ru/vacancy/${lastElementId}`"
+                    target="_blank"
+                    class="hover:underline"
+                    title="Открыть вакансию на hh.ru"
+                >
+                    {{ lastElementId.toLocaleString('ru-RU') }}
+                </a>
+            </span>
+        </div>
+
         <h1 class="text-2xl font-bold mb-4">Список вакансий</h1>
 
         <table class="min-w-full border border-gray-400 border-collapse text-sm">
@@ -101,7 +120,7 @@
             </thead>
             <tbody>
                 <tr v-for="vacancy in vacancies" :key="vacancy.id" class="hover:bg-gray-50">
-                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.id }}</td>
+                    <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.id.toLocaleString('ru-RU') }}</td>
                     <td class="border border-gray-400 px-1 py-2 max-w-64">
                         <div class="flex items-center gap-1 overflow-hidden">
                             <a
@@ -226,6 +245,8 @@
                     salaryCurrency: [],
                     archived: [],
                 },
+                // Id последней вакансии
+                lastElementId: null,
             }
         },
 
@@ -354,6 +375,9 @@
 
                     // Фасеты (опции фильтрации)
                     this.filterOptions = res.data.filterOptions || {};
+
+                    // Id последней вакансии
+                    this.lastElementId = res.data.lastElementId ?? null;
                 })
                 .catch(err => {
                     console.error('Ошибка загрузки вакансий', err);
