@@ -133,7 +133,7 @@ class IndexController extends Controller
             'filters.salaryTo' => 'integer',
             // Дата публикации
             'filters.publishedAt' => 'array|size:2',
-            'filters.publishedAt.*' => 'string',
+            'filters.publishedAt.*' => 'nullable|string',
 
             // * Сортировка:
             'sort' => 'array|min:1',

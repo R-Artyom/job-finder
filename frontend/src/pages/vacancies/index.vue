@@ -115,7 +115,29 @@
                             @change="applyFilters"
                         />
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">Опубликовано</th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">
+                        <div class="flex flex-col gap-1">
+                            <span>Опубликовано</span>
+                            <input
+                                type="date"
+                                v-model="publishedFrom"
+                                :class="[
+                                    'text-xs bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5',
+                                    publishedFrom ? 'text-orange-700' : 'text-gray-400'
+                                ]"
+                                @change="applyFilters"
+                            />
+                            <input
+                                type="date"
+                                v-model="publishedTo"
+                                :class="[
+                                    'text-xs bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5',
+                                    publishedTo ? 'text-orange-700' : 'text-gray-400'
+                                ]"
+                                @change="applyFilters"
+                            />
+                        </div>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -247,6 +269,9 @@
                 },
                 // Id последней вакансии
                 lastElementId: null,
+                // Опубликовано
+                publishedFrom: '',
+                publishedTo: '',
             }
         },
 
@@ -336,6 +361,14 @@
 
                             archived: this.selectedFilters.archived.length
                                 ? this.selectedFilters.archived
+                                : undefined,
+
+                            // Фильтры по дате
+                            publishedAt: this.publishedFrom || this.publishedTo
+                                ? [
+                                    this.publishedFrom ?? '',
+                                    this.publishedTo ?? ''
+                                ]
                                 : undefined,
                         }
                     }
