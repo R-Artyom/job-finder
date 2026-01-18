@@ -382,13 +382,13 @@
                 // Индикатор подгрузки новой страницы
                 this.isLoadingMore = this.next !== null;
 
-                // Полные даты для API
+                // Полные даты для API (конвертируем в UTC)
                 const publishedFrom = this.publishedFromDate
-                    ? `${this.publishedFromDate} ${this.publishedFromTime}:00`
+                    ? this.convertLocalToUTC(`${this.publishedFromDate}T${this.publishedFromTime}:00`)
                     : '';
 
                 const publishedTo = this.publishedToDate
-                    ? `${this.publishedToDate} ${this.publishedToTime}:00`
+                    ? this.convertLocalToUTC(`${this.publishedToDate}T${this.publishedToTime}:00`)
                     : '';
 
                 api.get('/vacancies', {
@@ -552,7 +552,7 @@
                     && this.filterOptions[key].length > 0;
             },
 
-            // Действие, необходимое выпролнить при изменению данных фильтрации
+            // Действие, необходимое выполнить при изменении данных фильтрации
             applyFilters() {
                 // Если дата "От" больше даты "До", то запрос на бэк отправлять не надо
                 if (!this.validatePublishedRange()) {
@@ -561,17 +561,7 @@
                 this.getVacancies(true);
             },
 
-            // Преобразование даты в необходимый для бэкенда формат
-            formatDateTimeForApi(value) {
-                // Если дата отсутствует совсем, то параметр в url всё равно надо отправить с пустым значением, на бэке это будет null
-                if (!value) {
-                    return '';
-                }
-                // Преобразовать вид даты типа '2026-01-21T17:44' в '2026-01-21 17:44:00'
-                return value.replace('T', ' ') + ':00';
-            },
-
-            // Валидация значений даты "От" и "До"
+            // Валидация значений даты "От" и "До" (с учетом временных зон)
             validatePublishedRange() {
                 // Если обе даты пустые - валидно
                 if (!this.publishedFromDate && !this.publishedToDate) {
@@ -579,7 +569,7 @@
                     return true;
                 }
 
-                // Создаем полные даты для сравнения
+                // Создаем полные даты для сравнения (локальное время)
                 let from, to;
 
                 if (this.publishedFromDate) {
@@ -590,6 +580,17 @@
                 if (this.publishedToDate) {
                     const toTime = this.publishedToTime || '23:59';
                     to = new Date(`${this.publishedToDate}T${toTime}`);
+                }
+
+                // Проверяем валидность дат
+                if (from && isNaN(from.getTime())) {
+                    this.publishedDateError = 'Некорректная дата "От"';
+                    return false;
+                }
+
+                if (to && isNaN(to.getTime())) {
+                    this.publishedDateError = 'Некорректная дата "До"';
+                    return false;
                 }
 
                 // Если есть обе даты, проверяем диапазон
@@ -637,6 +638,40 @@
                 }
                 // Если дата не установлена - игнорируем изменение времени
             },
+
+            // Конвертация локального времени в UTC для отправки на бэкенд
+            convertLocalToUTC(localDateTime) {
+                // Если дата отсутствует совсем, то параметр в url всё равно надо отправить с пустым значением, на бэке это будет null
+                if (!localDateTime) {
+                    return '';
+                }
+
+                try {
+                    // Создаем дату из локального времени
+                    const localDate = new Date(localDateTime);
+
+                    // Проверяем валидность даты
+                    if (isNaN(localDate.getTime())) {
+                        console.error('Некорректная дата:', localDateTime);
+                        return '';
+                    }
+
+                    // Получаем UTC компоненты
+                    const year = localDate.getUTCFullYear();
+                    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(localDate.getUTCDate()).padStart(2, '0');
+                    const hours = String(localDate.getUTCHours()).padStart(2, '0');
+                    const minutes = String(localDate.getUTCMinutes()).padStart(2, '0');
+                    const seconds = String(localDate.getUTCSeconds()).padStart(2, '0');
+
+                    // Формат для бэкенда: 'YYYY-MM-DD HH:mm:ss'
+                    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+                } catch (error) {
+                    console.error('Ошибка конвертации даты:', error);
+                    return '';
+                }
+            },
+
         }
     }
 </script>
