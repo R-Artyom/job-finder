@@ -119,23 +119,36 @@
                         <div class="flex flex-col gap-1">
                             <span>Опубликовано</span>
                             <input
-                                type="date"
+                                type="datetime-local"
                                 v-model="publishedFrom"
                                 :class="[
-                                    'text-xs bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5',
-                                    publishedFrom ? 'text-orange-700' : 'text-gray-400'
+                                    'text-xs bg-white border px-1 py-0.5 focus:outline-none',
+                                    publishedFrom
+                                        ? 'text-orange-700'
+                                        : 'text-gray-400',
+                                    publishedDateError
+                                        ? 'border-red-600 focus:border-red-600'
+                                        : 'border-transparent focus:border-orange-700'
                                 ]"
                                 @change="applyFilters"
                             />
                             <input
-                                type="date"
+                                type="datetime-local"
                                 v-model="publishedTo"
                                 :class="[
-                                    'text-xs bg-white border border-transparent focus:border-orange-700 focus:outline-none px-1 py-0.5',
-                                    publishedTo ? 'text-orange-700' : 'text-gray-400'
+                                    'text-xs bg-white border px-1 py-0.5 focus:outline-none',
+                                    publishedTo
+                                        ? 'text-orange-700'
+                                        : 'text-gray-400',
+                                    publishedDateError
+                                        ? 'border-red-600 focus:border-red-600'
+                                        : 'border-transparent focus:border-orange-700'
                                 ]"
                                 @change="applyFilters"
                             />
+                            <p v-if="publishedDateError" class="text-xs text-red-600 leading-tight">
+                                {{ publishedDateError }}
+                            </p>
                         </div>
                     </th>
                 </tr>
@@ -272,6 +285,7 @@
                 // Опубликовано
                 publishedFrom: '',
                 publishedTo: '',
+                publishedDateError: null,
             }
         },
 
@@ -366,8 +380,8 @@
                             // Фильтры по дате
                             publishedAt: this.publishedFrom || this.publishedTo
                                 ? [
-                                    this.publishedFrom ?? '',
-                                    this.publishedTo ?? ''
+                                    this.formatDateTimeForApi(this.publishedFrom),
+                                    this.formatDateTimeForApi(this.publishedTo),
                                 ]
                                 : undefined,
                         }
@@ -495,8 +509,43 @@
                     && this.filterOptions[key].length > 0;
             },
 
+            // Действие, необходимое выпролнить при изменению данных фильтрации
             applyFilters() {
+                // Если дата "От" больше даты "До", то запрос на бэк отправлять не надо
+                if (!this.validatePublishedRange()) {
+                    return;
+                }
                 this.getVacancies(true);
+            },
+
+            // Преобразование даты в необходимый для бэкенда формат
+            formatDateTimeForApi(value) {
+                // Если дата отсутствует совсем, то параметр в url всё равно надо отправить с пустым значением, на бэке это будет null
+                if (!value) {
+                    return '';
+                }
+                // Преобразовать вид даты типа '2026-01-21T17:44' в '2026-01-21 17:44:00'
+                return value.replace('T', ' ') + ':00';
+            },
+
+            // Валидация значений даты "От" и "До"
+            validatePublishedRange() {
+                // Одно пустое поле из двух считается допустимым
+                if (!this.publishedFrom || !this.publishedTo) {
+                    this.publishedDateError = null;
+                    return true;
+                }
+
+                const from = new Date(this.publishedFrom);
+                const to   = new Date(this.publishedTo);
+
+                if (from > to) {
+                    this.publishedDateError = 'Дата "От" не может быть больше даты "До"';
+                    return false;
+                }
+
+                this.publishedDateError = null;
+                return true;
             },
         }
     }
