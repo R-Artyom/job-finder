@@ -138,7 +138,7 @@
                                     v-model="publishedFromTime"
                                     :class="[
                                         'text-xs bg-white border px-1 py-0.5 focus:outline-none w-13',
-                                        publishedFromTime
+                                        publishedFromDate
                                             ? 'text-orange-700'
                                             : 'text-gray-400',
                                         publishedDateError
@@ -168,7 +168,7 @@
                                     v-model="publishedToTime"
                                     :class="[
                                         'text-xs bg-white border px-1 py-0.5 focus:outline-none w-13',
-                                        publishedToTime
+                                        publishedToDate
                                             ? 'text-orange-700'
                                             : 'text-gray-400',
                                         publishedDateError
