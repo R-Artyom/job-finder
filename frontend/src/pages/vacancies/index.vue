@@ -118,34 +118,66 @@
                     <th class="border border-gray-400 px-1 py-2 w-32">
                         <div class="flex flex-col gap-1">
                             <span>Опубликовано</span>
-                            <input
-                                type="datetime-local"
-                                v-model="publishedFrom"
-                                :class="[
-                                    'text-xs bg-white border px-1 py-0.5 focus:outline-none',
-                                    publishedFrom
-                                        ? 'text-orange-700'
-                                        : 'text-gray-400',
-                                    publishedDateError
-                                        ? 'border-red-600 focus:border-red-600'
-                                        : 'border-transparent focus:border-orange-700'
-                                ]"
-                                @change="applyFilters"
-                            />
-                            <input
-                                type="datetime-local"
-                                v-model="publishedTo"
-                                :class="[
-                                    'text-xs bg-white border px-1 py-0.5 focus:outline-none',
-                                    publishedTo
-                                        ? 'text-orange-700'
-                                        : 'text-gray-400',
-                                    publishedDateError
-                                        ? 'border-red-600 focus:border-red-600'
-                                        : 'border-transparent focus:border-orange-700'
-                                ]"
-                                @change="applyFilters"
-                            />
+                            <div class="flex gap-1">
+                                <input
+                                    type="date"
+                                    v-model="publishedFromDate"
+                                    :class="[
+                                        'text-xs bg-white border px-1 py-0.5 focus:outline-none flex-1',
+                                        publishedFromDate
+                                            ? 'text-orange-700'
+                                            : 'text-gray-400',
+                                        publishedDateError
+                                            ? 'border-red-600 focus:border-red-600'
+                                            : 'border-transparent focus:border-orange-700'
+                                    ]"
+                                    @change="onPublishedFromChange"
+                                />
+                                <input
+                                    type="time"
+                                    v-model="publishedFromTime"
+                                    :class="[
+                                        'text-xs bg-white border px-1 py-0.5 focus:outline-none w-13',
+                                        publishedFromTime
+                                            ? 'text-orange-700'
+                                            : 'text-gray-400',
+                                        publishedDateError
+                                            ? 'border-red-600 focus:border-red-600'
+                                            : 'border-transparent focus:border-orange-700'
+                                    ]"
+                                    @change="applyFilters"
+                                />
+                            </div>
+                            <div class="flex gap-1 mt-1">
+                                <input
+                                    type="date"
+                                    v-model="publishedToDate"
+                                    :class="[
+                                        'text-xs bg-white border px-1 py-0.5 focus:outline-none flex-1',
+                                        publishedToDate
+                                            ? 'text-orange-700'
+                                            : 'text-gray-400',
+                                        publishedDateError
+                                            ? 'border-red-600 focus:border-red-600'
+                                            : 'border-transparent focus:border-orange-700'
+                                    ]"
+                                    @change="onPublishedToChange"
+                                />
+                                <input
+                                    type="time"
+                                    v-model="publishedToTime"
+                                    :class="[
+                                        'text-xs bg-white border px-1 py-0.5 focus:outline-none w-13',
+                                        publishedToTime
+                                            ? 'text-orange-700'
+                                            : 'text-gray-400',
+                                        publishedDateError
+                                            ? 'border-red-600 focus:border-red-600'
+                                            : 'border-transparent focus:border-orange-700'
+                                    ]"
+                                    @change="applyFilters"
+                                />
+                            </div>
                             <p v-if="publishedDateError" class="text-xs text-red-600 leading-tight">
                                 {{ publishedDateError }}
                             </p>
@@ -282,9 +314,11 @@
                 },
                 // Id последней вакансии
                 lastElementId: null,
-                // Опубликовано
-                publishedFrom: '',
-                publishedTo: '',
+                // Опубликовано (разделено на дату и время)
+                publishedFromDate: '',
+                publishedFromTime: '00:00',
+                publishedToDate: '',
+                publishedToTime: '23:59',
                 publishedDateError: null,
             }
         },
@@ -348,6 +382,15 @@
                 // Индикатор подгрузки новой страницы
                 this.isLoadingMore = this.next !== null;
 
+                // Полные даты для API
+                const publishedFrom = this.publishedFromDate
+                    ? `${this.publishedFromDate} ${this.publishedFromTime}:00`
+                    : '';
+
+                const publishedTo = this.publishedToDate
+                    ? `${this.publishedToDate} ${this.publishedToTime}:00`
+                    : '';
+
                 api.get('/vacancies', {
                     params: {
                         next: this.next ?? undefined,
@@ -378,10 +421,10 @@
                                 : undefined,
 
                             // Фильтры по дате
-                            publishedAt: this.publishedFrom || this.publishedTo
+                            publishedAt: (this.publishedFromDate || this.publishedToDate)
                                 ? [
-                                    this.formatDateTimeForApi(this.publishedFrom),
-                                    this.formatDateTimeForApi(this.publishedTo),
+                                    publishedFrom,
+                                    publishedTo,
                                 ]
                                 : undefined,
                         }
@@ -530,22 +573,51 @@
 
             // Валидация значений даты "От" и "До"
             validatePublishedRange() {
-                // Одно пустое поле из двух считается допустимым
-                if (!this.publishedFrom || !this.publishedTo) {
+                // Если обе даты пустые - валидно
+                if (!this.publishedFromDate && !this.publishedToDate) {
                     this.publishedDateError = null;
                     return true;
                 }
 
-                const from = new Date(this.publishedFrom);
-                const to   = new Date(this.publishedTo);
+                // Создаем полные даты для сравнения
+                let from, to;
 
-                if (from > to) {
+                if (this.publishedFromDate) {
+                    const fromTime = this.publishedFromTime || '00:00';
+                    from = new Date(`${this.publishedFromDate}T${fromTime}`);
+                }
+
+                if (this.publishedToDate) {
+                    const toTime = this.publishedToTime || '23:59';
+                    to = new Date(`${this.publishedToDate}T${toTime}`);
+                }
+
+                // Если есть обе даты, проверяем диапазон
+                if (from && to && from > to) {
                     this.publishedDateError = 'Дата "От" не может быть больше даты "До"';
                     return false;
                 }
 
                 this.publishedDateError = null;
                 return true;
+            },
+
+            // Обработчик изменения даты "От"
+            onPublishedFromChange() {
+                // Автоматически устанавливаем время 00:00 при выборе даты
+                if (this.publishedFromDate && !this.publishedFromTime) {
+                    this.publishedFromTime = '00:00';
+                }
+                this.applyFilters();
+            },
+
+            // Обработчик изменения даты "До"
+            onPublishedToChange() {
+                // Автоматически устанавливаем время 23:59 при выборе даты
+                if (this.publishedToDate && !this.publishedToTime) {
+                    this.publishedToTime = '23:59';
+                }
+                this.applyFilters();
             },
         }
     }
