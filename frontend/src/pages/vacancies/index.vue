@@ -145,7 +145,7 @@
                                             ? 'border-red-600 focus:border-red-600'
                                             : 'border-transparent focus:border-orange-700'
                                     ]"
-                                    @change="applyFilters"
+                                    @change="onPublishedFromTimeChange"
                                 />
                             </div>
                             <div class="flex gap-1 mt-1">
@@ -175,7 +175,7 @@
                                             ? 'border-red-600 focus:border-red-600'
                                             : 'border-transparent focus:border-orange-700'
                                     ]"
-                                    @change="applyFilters"
+                                    @change="onPublishedToTimeChange"
                                 />
                             </div>
                             <p v-if="publishedDateError" class="text-xs text-red-600 leading-tight">
@@ -618,6 +618,24 @@
                     this.publishedToTime = '23:59';
                 }
                 this.applyFilters();
+            },
+
+            // Обработчик изменения времени "От"
+            onPublishedFromTimeChange() {
+                // Отправляем запрос только если дата установлена
+                if (this.publishedFromDate) {
+                    this.applyFilters();
+                }
+                // Если дата не установлена - игнорируем изменение времени
+            },
+
+            // Обработчик изменения времени "До"
+            onPublishedToTimeChange() {
+                // Отправляем запрос только если дата установлена
+                if (this.publishedToDate) {
+                    this.applyFilters();
+                }
+                // Если дата не установлена - игнорируем изменение времени
             },
         }
     }
