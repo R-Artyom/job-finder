@@ -51,8 +51,8 @@ class StoreController extends Controller
             $vacancy->published_at = Carbon::parse($data['published_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
         }
         // Оригинальная дата создания вакансии
-        if (!empty($data['created_at'])) {
-            $vacancy->created_at = Carbon::parse($data['created_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
+        if (!empty($data['initial_created_at'])) {
+            $vacancy->created_at = Carbon::parse($data['initial_created_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
         }
         // Дата создания записи в БД
         if (!empty($data['updated_at'])) {
