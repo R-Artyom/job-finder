@@ -36,7 +36,7 @@
             <thead class="bg-gray-100">
                 <tr>
                     <th class="border border-gray-400 px-1 py-2 w-16">№</th>
-                    <th class="border border-gray-400 px-1 py-2 w-64">
+                    <th class="border border-gray-400 px-1 py-2 w-70">
                         <div class="flex flex-col gap-1">
                             <span>Название</span>
                             <input
@@ -48,7 +48,7 @@
                             />
                         </div>
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">
+                    <th class="border border-gray-400 px-1 py-2 w-52">
                         <div class="flex flex-col gap-1">
                             <span>Работодатель</span>
                             <input
@@ -68,7 +68,7 @@
                             />
                         </div>
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">
+                    <th class="border border-gray-400 px-1 py-2 w-26">
                         <span>Регион</span>
                         <FacetDropdown
                             v-if="hasFacet('areaId')"
@@ -79,7 +79,7 @@
                             @change="applyFilters"
                         />
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-32">
+                    <th class="border border-gray-400 px-1 py-2 w-26">
                         <span>Страна</span>
                         <FacetDropdown
                             v-if="hasFacet('countryId')"
@@ -90,10 +90,10 @@
                             @change="applyFilters"
                         />
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-64">Описание</th>
-                    <th class="border border-gray-400 px-1 py-2 w-24">ЗП от</th>
-                    <th class="border border-gray-400 px-1 py-2 w-24">ЗП до</th>
-                    <th class="border border-gray-400 px-1 py-2 w-20">
+                    <th class="border border-gray-400 px-1 py-2 w-72">Описание</th>
+                    <th class="border border-gray-400 px-1 py-2 w-18">ЗП от</th>
+                    <th class="border border-gray-400 px-1 py-2 w-18">ЗП до</th>
+                    <th class="border border-gray-400 px-1 py-2 w-18">
                         <span>Валюта</span>
                         <FacetDropdown
                             v-if="hasFacet('salaryCurrency')"
@@ -103,7 +103,7 @@
                             @change="applyFilters"
                         />
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-24">
+                    <th class="border border-gray-400 px-1 py-2 w-18">
                         <span>В архиве</span>
                         <FacetDropdown
                             v-if="hasFacet('archived')"
@@ -183,6 +183,7 @@
                             </p>
                         </div>
                     </th>
+                    <th class="border border-gray-400 px-1 py-2 w-32">Создано</th>
                 </tr>
             </thead>
             <tbody>
@@ -240,6 +241,9 @@
                     </td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
                         <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.publishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
+                    </td>
+                    <td class="border border-gray-400 px-1 py-2 text-center">
+                        <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.createdAt ? formatDate(vacancy.createdAt) : '—' }}</div>
                     </td>
                 </tr>
 

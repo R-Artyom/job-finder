@@ -209,6 +209,8 @@ class IndexController extends Controller
                 'employers.name as employerName',
                 // Страна
                 'areas.country_id as countryId',
+                // Оригинальная дата создания
+                'vacancies.created_at',
             );
 
         // * Фильтрация
@@ -307,6 +309,7 @@ class IndexController extends Controller
                     'salaryCurrency' => $vacancy->salary_currency,
                     'archived' => $vacancy->archived,
                     'publishedAt' => empty($vacancy->published_at) ? null : strtotime($vacancy->published_at),
+                    'createdAt' => empty($vacancy->created_at) ? null : strtotime($vacancy->created_at),
                 ];
             }),
             'filterOptions' => $facetResults,
