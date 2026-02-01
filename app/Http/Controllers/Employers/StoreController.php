@@ -31,13 +31,13 @@ class StoreController extends Controller
         if (!empty($data['site_url'])) {
             $employer->site_url = $data['site_url'];
         }
+        // Id логотипа "240"
+        if (!empty($data['logo_urls']['240'])) {
+            $employer->logo_path = $this->extractLogoPath($data['logo_urls']['240']);
+        }
         // Дата создания работодателя
         if (!empty($data['created_at'])) {
             $employer->created_at = Carbon::parse($data['created_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
-        }
-        // Оригинальная дата создания работодателя
-        if (!empty($data['updated_at'])) {
-            $employer->updated_at = now()->setTimezone('UTC')->format('Y-m-d H:i:s');
         }
         // Дата создания записи в БД
         if (!empty($data['updated_at'])) {
@@ -46,5 +46,20 @@ class StoreController extends Controller
 
         // Создание работодателя
         $employer->save();
+    }
+
+    /**
+     * Извлечь id логотипа работодателя из URL-адреса
+     *
+     * @param string $url
+     * @return string|null
+     */
+    private function extractLogoPath(string $url): ?string
+    {
+        // Разбор URL-адреса на компоненты (На примере "https://img.hhcdn.ru/employer-logo-round/381123.png")
+        $path = parse_url($url, PHP_URL_PATH);
+
+        // Относительный путь ("/employer-logo-round/381123.png")
+        return $path ?: null;
     }
 }

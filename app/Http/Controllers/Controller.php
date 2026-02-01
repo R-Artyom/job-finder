@@ -234,12 +234,19 @@ class Controller extends BaseController
         // Работодатели
         if (!empty($ids['employers'])) {
             $rows = DB::table('employers')
+                ->select('id', 'name', 'site_url', 'logo_path')
                 ->whereIn('id', $ids['employers'])
                 ->get();
+
             foreach ($rows as $row) {
+                // Формирование URL логотипа компании
+                $logoUrl = isset($row->logo_path) ? rtrim(config('hh.cdn_host'), '/') . $row->logo_path : null;
+
                 $dictionaries['employers'][$row->id] = [
                     'id' => $row->id,
-                    'name' => $row->name
+                    'name' => $row->name,
+                    'siteUrl' => $row->site_url,
+                    'logoUrl' => $logoUrl,
                 ];
             }
         }
@@ -247,12 +254,13 @@ class Controller extends BaseController
         // Регионы
         if (!empty($ids['areas'])) {
             $rows = DB::table('areas')
+                ->select('id', 'name')
                 ->whereIn('id', $ids['areas'])
                 ->get();
             foreach ($rows as $row) {
                 $dictionaries['areas'][$row->id] = [
                     'id' => $row->id,
-                    'name' => $row->name
+                    'name' => $row->name,
                 ];
             }
         }
@@ -260,12 +268,13 @@ class Controller extends BaseController
         // Страны
         if (!empty($ids['countries'])) {
             $rows = DB::table('areas')
+                ->select('id', 'name')
                 ->whereIn('id', $ids['countries'])
                 ->get();
             foreach ($rows as $row) {
                 $dictionaries['countries'][$row->id] = [
                     'id' => $row->id,
-                    'name' => $row->name
+                    'name' => $row->name,
                 ];
             }
         }

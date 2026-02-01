@@ -48,7 +48,7 @@
                             />
                         </div>
                     </th>
-                    <th class="border border-gray-400 px-1 py-2 w-52">
+                    <th class="border border-gray-400 px-1 py-2 w-56">
                         <div class="flex flex-col gap-1">
                             <span>Работодатель</span>
                             <input
@@ -68,6 +68,7 @@
                             />
                         </div>
                     </th>
+                    <th class="border border-gray-400 px-1 py-2 w-56">Сайт</th>
                     <th class="border border-gray-400 px-1 py-2 w-26">
                         <span>Регион</span>
                         <FacetDropdown
@@ -203,7 +204,7 @@
                             <div class="truncate whitespace-nowrap overflow-hidden" v-html="cleanHtml(vacancy.name)" :title="cleanAllHtml(vacancy.name)"></div>
                         </div>
                     </td>
-                    <td class="border border-gray-400 px-1 py-2 max-w-32">
+                    <td class="border border-gray-400 px-1 py-2 max-w-56">
                         <div class="flex items-center gap-1 overflow-hidden">
                             <a
                                 v-if="vacancy.employerId"
@@ -220,6 +221,46 @@
                             </div>
                         </div>
                     </td>
+                    <td class="border border-gray-400 px-1 py-0 max-w-56 align-middle overflow-visible">
+                        <div class="flex items-center gap-1 h-full group">
+                            <!-- Есть siteUrl -->
+                            <template v-if="employers[vacancy.employerId]?.siteUrl">
+                                <div class="flex items-center h-full w-[32px] min-w-[32px]">
+                                    <!-- Логотип компании -->
+                                    <img
+                                        v-if="employers[vacancy.employerId]?.logoUrl"
+                                        :src="employers[vacancy.employerId].logoUrl"
+                                        class="h-full max-h-[32px] w-auto rounded-md object-contain flex-shrink-0 group-hover:scale-450 group-hover:z-50 group-hover:relative transition-transform duration-200 transform-gpu"
+                                        loading="lazy"
+                                        alt=""
+                                        style="transform-origin: right center"
+                                    />
+
+                                    <!-- Логотип по умолчанию (пустой блок такого же размера) -->
+                                    <div
+                                        v-else
+                                        class="h-[32px] w-[32px] flex-shrink-0"
+                                        title="Логотип не указан"
+                                    ></div>
+                                </div>
+
+                                <!-- siteUrl текстом -->
+                                <a
+                                    :href="employers[vacancy.employerId].siteUrl"
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="truncate whitespace-nowrap text-orange-800 hover:underline ml-1 group-hover:opacity-30 transition-opacity"
+                                    :title="employers[vacancy.employerId].siteUrl"
+                                >
+                                    {{ employers[vacancy.employerId].siteUrl }}
+                                </a>
+                            </template>
+
+                            <!-- Нет siteUrl -->
+                            <span v-else class="flex-1 text-center">—</span>
+                        </div>
+                    </td>
+
                     <td class="border border-gray-400 px-1 py-2 max-w-32">
                         <div class="truncate whitespace-nowrap overflow-hidden" :title="areas[vacancy.areaId]?.name ?? '—' ">
                             {{ areas[vacancy.areaId]?.name ?? '—' }}
@@ -237,7 +278,7 @@
                     <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salaryTo ?? '—' }}</td>
                     <td class="border border-gray-400 px-1 py-2 text-center">{{ vacancy.salaryCurrency ?? '—' }}</td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
-                        <span :class="vacancy.archived ? 'text-red-600' : 'text-green-600'"> {{ vacancy.archived ? 'Да' : 'Нет' }}</span>
+                        <span :class="vacancy.archived ? 'text-orange-800' : 'text-green-600'"> {{ vacancy.archived ? 'Да' : 'Нет' }}</span>
                     </td>
                     <td class="border border-gray-400 px-1 py-2 text-center">
                         <div class="truncate whitespace-nowrap overflow-hidden"> {{ vacancy.publishedAt ? formatDate(vacancy.publishedAt) : '—' }}</div>
