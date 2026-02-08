@@ -49,12 +49,12 @@ class StoreController extends Controller
     }
 
     /**
-     * Извлечь id логотипа работодателя из URL-адреса
+     * Извлечь относительный путь логотипа работодателя из URL-адреса
      *
      * @param string $url
      * @return string|null
      */
-    private function extractLogoPath(string $url): ?string
+    public function extractLogoPath(string $url): ?string
     {
         // Разбор URL-адреса на компоненты (На примере "https://img.hhcdn.ru/employer-logo-round/381123.png")
         $path = parse_url($url, PHP_URL_PATH);

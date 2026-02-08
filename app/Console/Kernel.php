@@ -14,8 +14,22 @@ class Kernel extends ConsoleKernel
     {
         // Запуск парсинга регионов
         $schedule->command('parse-areas:run')->daily();
+
         // Запуск парсинга вакансии
-        $schedule->command('parse-vacancy:run')->everyMinute();
+        $schedule->command('parse-vacancy:run')
+            ->everyMinute()
+            // Только по четным минутам
+            ->when(fn () => now()->minute % 2 === 0)
+            // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
+            ->withoutOverlapping(10);
+
+        // Запуск обновления логотипа работодателя
+        $schedule->command('update-logo-path:run')
+            ->everyMinute()
+            // Только по НЕчетным минутам
+            ->when(fn () => now()->minute % 2 === 1)
+            // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
+            ->withoutOverlapping(10);
     }
 
     /**
