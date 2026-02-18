@@ -117,8 +117,8 @@ class RunParseController extends Controller
                                     // Если не существует такого работодателя в базе MySql
                                     if (!Employer::query()->where('id', $employerId)->exists()) {
                                         $response = Http::get("https://api.hh.ru/employers/{$employerId}");
-                                        $data = $response->json();
                                         if ($response->successful()) {
+                                            $data = $response->json();
                                             (new EmployersStoreController)($data);
                                         } else {
                                             // 404 - Работодатель отсутствует
@@ -175,6 +175,9 @@ class RunParseController extends Controller
                     } catch (ConnectionException $e) {
                         // Откат транзакции
                         DB::rollBack();
+                        // Откат/Выравнивание локального счетчика
+                        $vacancyId = $counter->value;
+                        // Логирование в файл
                         logger()->error('🟡 Ошибка соединения ' . $routeAction,
                             [
                                 'vacancyId' => $vacancyId,
@@ -190,6 +193,9 @@ class RunParseController extends Controller
                         $this->loggerContext = [];
                         // Уведомление
                         $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
+                        // Фиксировать отметку времени
+                        $fixedTime = microtime(true);
+                        // Выход из цикла, при этом finally всё равно выполнится
                         break;
 
                     } finally {
@@ -201,8 +207,6 @@ class RunParseController extends Controller
                         // Достигнут предел счетчика
                         if ($vacancyId >= $counter->limit) {
                             $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
-                            $counter->status = 'run';
-                            $counter->save();
                         }
                     }
                 // В базе MySql уже есть такая вакансия
@@ -219,9 +223,7 @@ class RunParseController extends Controller
 
                     // Достигнут предел счетчика
                     if ($vacancyId >= $counter->limit) {
-                        $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
-                        $counter->status = 'run';
-                        $counter->save();
+                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
                     }
                 }
 
