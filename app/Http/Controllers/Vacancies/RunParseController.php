@@ -90,6 +90,8 @@ class RunParseController extends Controller
 
             // Повторять считывание вакансий в течение 55 сек, если счетчик не достиг предела
             while ($fixedTime - $startTime < 55 && $vacancyId <= $counter->limit) {
+                $vacancyIdCopy = $vacancyId;
+
                 // Если ещё нет такой вакансии в базе MySql
                 if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                     // Задержка от 30 мс до 70 мс - частые ошибки 403
@@ -163,7 +165,7 @@ class RunParseController extends Controller
                             throw new \Exception('Vacancy API error ' . $response->status());
                         }
 
-                        // Инкремент счетчика
+                        // Инкремент счетчика для следующей итерации
                         $vacancyId++;
                         $counter->value = $vacancyId;
                         $counter->save();
@@ -195,35 +197,28 @@ class RunParseController extends Controller
                         $notifications[] = ['🔴 Ошибка общая', $e->getMessage()];
                         // Фиксировать отметку времени
                         $fixedTime = microtime(true);
-                        // Выход из цикла, при этом finally всё равно выполнится
+                        // Выход из цикла
                         break;
-
-                    } finally {
-                        // Каждые 100000 отчёт
-                        if ($vacancyId % 100000 === 0) {
-                            $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
-                        }
-
-                        // Достигнут предел счетчика
-                        if ($vacancyId >= $counter->limit) {
-                            $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
-                        }
                     }
+
                 // В базе MySql уже есть такая вакансия
                 } else {
-                    // Инкремент счетчика
+                    // Инкремент счетчика для следующей итерации
                     $vacancyId++;
                     $counter->value = $vacancyId;
                     $counter->save();
+                }
 
+                // Только если счётчик сдвинулся с места
+                if ($vacancyIdCopy !== $vacancyId) {
                     // Каждые 100000 отчёт
-                    if ($vacancyId % 100000 === 0) {
-                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyId"];
+                    if ($vacancyIdCopy % 100000 === 0) {
+                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий достиг значения $vacancyIdCopy"];
                     }
 
                     // Достигнут предел счетчика
-                    if ($vacancyId >= $counter->limit) {
-                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий остановлен на значении $vacancyId"];
+                    if ($vacancyIdCopy >= $counter->limit) {
+                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий остановлен на значении $vacancyIdCopy"];
                     }
                 }
 
