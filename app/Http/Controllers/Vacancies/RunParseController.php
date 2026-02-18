@@ -218,7 +218,7 @@ class RunParseController extends Controller
 
                     // Достигнут предел счетчика
                     if ($vacancyIdCopy >= $counter->limit) {
-                        $notifications[] = ['🟢 Отчёт', "Счетчик вакансий остановлен на значении $vacancyIdCopy"];
+                        $notifications[] = ['🟡 Отчёт', "Счетчик вакансий остановлен на значении $vacancyIdCopy"];
                     }
                 }
 

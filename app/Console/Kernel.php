@@ -17,8 +17,9 @@ class Kernel extends ConsoleKernel
 
         // Запуск парсинга вакансии
         $schedule->command('parse-vacancy:run')
-            // Каждые 10 минут (0,10,20,30,40,50)
-            ->everyTenMinutes()
+            // Каждую 4-ю минуту (0,4,8,12,16...)
+            ->everyMinute()
+            ->when(fn () => now()->minute % 4 === 0)
             // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
             ->withoutOverlapping(10);
 
@@ -26,7 +27,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('update-logo-path:run')
             // Каждую минуту, кроме тех, когда идёт парсинг вакансий
             ->everyMinute()
-            ->when(fn () => now()->minute % 10 !== 0)
+            ->when(fn () => now()->minute % 4 !== 0)
             // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
             ->withoutOverlapping(10);
     }
