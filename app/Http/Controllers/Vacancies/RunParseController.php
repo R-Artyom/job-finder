@@ -37,8 +37,8 @@ class RunParseController extends Controller
             // Параметры запроса вакансий
             $params = [
                 'page' => 0,
-                // Дата за минуту до текущей в формате <2026-01-10T02:59:00> по МСК
-                'date_from' => Carbon::now('Europe/Moscow')->subMinute()->format('Y-m-d\TH:i:s'),
+                // Дата за 5 минут до текущей в формате <2026-01-10T02:59:00> по МСК
+                'date_from' => Carbon::now('Europe/Moscow')->subMinutes(5)->format('Y-m-d\TH:i:s'),
                 // Текущая дата в формате <2026-01-10T03:00:00> по МСК
                 'date_to' => Carbon::now('Europe/Moscow')->format('Y-m-d\TH:i:s'),
                 'order_by' => 'publication_time',
