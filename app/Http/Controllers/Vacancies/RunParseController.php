@@ -78,7 +78,7 @@ class RunParseController extends Controller
         }
 
         // * Считывание вакансий
-        if ($counter->status === 'run' && $vacancyId < $counter->limit) {
+        if ($counter->status === 'run' && $vacancyId <= $counter->limit) {
             // Счетчик занят
             $counter->status = 'busy';
             $counter->save();
@@ -89,7 +89,7 @@ class RunParseController extends Controller
             $fixedTime = microtime(true);
 
             // Повторять считывание вакансий в течение 55 сек, если счетчик не достиг предела
-            while ($fixedTime - $startTime < 55 && $vacancyId < $counter->limit) {
+            while ($fixedTime - $startTime < 55 && $vacancyId <= $counter->limit) {
                 // Если ещё нет такой вакансии в базе MySql
                 if (!Vacancy::query()->where('id', $vacancyId)->exists()) {
                     // Задержка от 30 мс до 70 мс - частые ошибки 403
