@@ -15,19 +15,38 @@ class Kernel extends ConsoleKernel
         // Запуск парсинга регионов
         $schedule->command('parse-areas:run')->daily();
 
+        // * Динамический режим нагрузки
         // Запуск парсинга вакансии
         $schedule->command('parse-vacancy:run')
-            // Каждую 4-ю минуту (0,4,8,12,16...)
             ->everyMinute()
-            ->when(fn () => now()->minute % 4 === 0)
+            ->when(function () {
+                $now = now()->timezone('Europe/Moscow');
+                $hour = $now->hour;
+                $minute = $now->minute;
+                $isNight = $hour >= 20 || $hour < 8;
+                return $isNight
+                    // Ночь - Каждую 4-ю минуту (0,4,8,12,16...)
+                    ? $minute % 4 === 0
+                    // День - Только по четным минутам
+                    : $minute % 2 === 0;
+            })
             // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
             ->withoutOverlapping(10);
 
         // Запуск обновления логотипа работодателя
         $schedule->command('update-logo-path:run')
-            // Каждую минуту, кроме тех, когда идёт парсинг вакансий
             ->everyMinute()
-            ->when(fn () => now()->minute % 4 !== 0)
+            ->when(function () {
+                $now = now()->timezone('Europe/Moscow');
+                $hour = $now->hour;
+                $minute = $now->minute;
+                $isNight = $hour >= 20 || $hour < 8;
+                return $isNight
+                    // Ночь - Каждую минуту, кроме тех, когда идёт парсинг вакансий
+                    ? $minute % 4 !== 0
+                    // День - Только по НЕчетным минутам
+                    : $minute % 2 === 1;
+            })
             // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
             ->withoutOverlapping(10);
     }
