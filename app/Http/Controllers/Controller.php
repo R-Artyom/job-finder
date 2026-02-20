@@ -51,9 +51,10 @@ class Controller extends BaseController
      * Отправка уведомления в телеграм
      *
      * @param array $notifyData тема уведомления (первый элемент массива) + текст уведомления (всё остальное, каждый элемент - новая строка)
+     * @param string|null $chatId Id чата-адресата
      * @return void
      */
-    public function sendTelegramNotify(array $notifyData): void
+    public function sendTelegramNotify(array $notifyData, string $chatId = null): void
     {
         // Отправка уведомлений, если разрешено
         if (config('enable.telegramNotifications') === true) {
@@ -68,7 +69,7 @@ class Controller extends BaseController
 
             // * Отправка уведомления
             Telegram::sendMessage([
-                'chat_id' => env('TELEGRAM_CHANNEL_ID', ''),
+                'chat_id' => $chatId ?? env('TELEGRAM_CHANNEL_ID', ''),
                 'parse_mode' => 'html',
                 'text' => $notifyData,
             ]);
