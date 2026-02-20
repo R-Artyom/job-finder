@@ -129,7 +129,6 @@ class RunParseController extends Controller
                                                 (new EmployersStoreController)(['id' => $employerId]);
                                             // 400 и остальные - Неправильный запрос и другое
                                             } else {
-                                                $counter->status = 'error';
                                                 // Контекст для лога
                                                 $this->loggerContext = [
                                                     'vacancyId' => $vacancyId,
@@ -137,6 +136,11 @@ class RunParseController extends Controller
                                                     'status' => $response->status(),
                                                     'response' => $response->body(),
                                                 ];
+                                                // 403 - Ошибка доступа к данным (частые запросы)
+                                                // 502 - Сервер перегружен из-за высокого трафика
+                                                if ($response->status() !== 403 && $response->status() !== 502) {
+                                                    $counter->status = 'error';
+                                                }
                                                 throw new \Exception('Employer API error ' . $response->status());
                                             }
                                         }

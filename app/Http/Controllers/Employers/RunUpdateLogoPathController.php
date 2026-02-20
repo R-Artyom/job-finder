@@ -93,7 +93,6 @@ class RunUpdateLogoPathController extends Controller
                             // 404 - Работодатель отсутствует, поэтому повторный запрос не нужен
                             // !404 - Работодатель скорее всего есть, нужен повторный запрос
                             if ($response->status() !== 404) {
-                                $counter->status = 'error';
                                 // Контекст для лога
                                 $this->loggerContext = [
                                     'employerId' => $employerId,
@@ -101,6 +100,11 @@ class RunUpdateLogoPathController extends Controller
                                     'status' => $response->status(),
                                     'response' => $response->body(),
                                 ];
+                                // 403 - Ошибка доступа к данным (частые запросы)
+                                // 502 - Сервер перегружен из-за высокого трафика
+                                if ($response->status() !== 403 && $response->status() !== 502) {
+                                    $counter->status = 'error';
+                                }
                                 throw new \Exception('Employer API error ' . $response->status());
                             }
                         }
