@@ -12,7 +12,7 @@ class RunParseCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'parse-vacancy:run';
+    protected $signature = 'parse-vacancy:run {counterName=vacancyId : Название счетчика (по умолчанию vacancyId)}';
 
     /**
      * The console command description.
@@ -26,7 +26,10 @@ class RunParseCommand extends Command
      */
     public function handle()
     {
-        // Запуск разбора вакансии
-        (new RunParseController)();
+        // Получаем название счетчика из аргумента команды
+        $counterName = $this->argument('counterName');
+
+        // Запуск разбора вакансии с передачей названия счетчика
+        (new RunParseController)($counterName);
     }
 }

@@ -17,15 +17,19 @@ class RunParseController extends Controller
     // Данные для логирования
     private array $loggerContext = [];
 
-    public function __invoke()
+    public function __invoke(string $counterName = 'vacancyId')
     {
         // Полное имя текущего контроллера с namespace
         $routeAction = get_class($this);
 
         // Получаем текущий счетчик или создаем его, если не существует
         $counter = Counter::query()->firstOrCreate(
-            ['name' => 'vacancyId'],
-            ['value' => 1, 'status' => 'run']
+            ['name' => $counterName],
+            [
+                'value' => 1,
+                'limit' => 127093529,
+                'status' => 'run'
+            ],
         );
         $vacancyId = $counter->value;
 

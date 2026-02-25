@@ -16,7 +16,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('parse-areas:run')->daily();
 
         // * Динамический режим нагрузки
-        // Запуск парсинга вакансии
+        // Запуск основного парсинга вакансий
         $schedule->command('parse-vacancy:run')
             ->everyMinute()
             ->when(function () {
@@ -33,8 +33,8 @@ class Kernel extends ConsoleKernel
             // В любой момент времени работает только один экземпляр команды, lock снимется максимум через 10 минут (т.к lock может остаться, если команда упала с фатальной ошибкой)
             ->withoutOverlapping(10);
 
-        // Запуск обновления логотипа работодателя
-        $schedule->command('update-logo-path:run')
+        // Запуск повторного парсинга вакансий для считывания по ошибке пропущенных после первого прохода вакансий
+        $schedule->command('parse-vacancy:run secondVacancyId')
             ->everyMinute()
             ->when(function () {
                 $now = now()->timezone('Europe/Moscow');
