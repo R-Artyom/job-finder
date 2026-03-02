@@ -216,9 +216,18 @@
                             >
                                 hh.ru
                             </a>
-                            <div class="truncate whitespace-nowrap overflow-hidden" :title="employers[vacancy.employerId]?.name ?? '—'">
+                            <a
+                                v-if="vacancy.employerId"
+                                :href="`/vacancies?filters[employerId][]=${vacancy.employerId}`"
+                                target="_blank"
+                                rel="noopener"
+                                class="truncate whitespace-nowrap overflow-hidden text-orange-800 hover:underline"
+                                :title="employers[vacancy.employerId]?.name ?? '—'"
+                            >
                                 {{ employers[vacancy.employerId]?.name ?? '—' }}
-                            </div>
+                            </a>
+
+                            <span v-else>—</span>
                         </div>
                     </td>
                     <td class="border border-gray-400 px-1 py-0 max-w-56 align-middle overflow-visible">
@@ -369,6 +378,13 @@
         },
 
         mounted() {
+            const params = new URLSearchParams(window.location.search);
+            // Чтение employerId из URL
+            const employerIds = params.getAll('filters[employerId][]');
+            if (employerIds.length) {
+                this.selectedFilters.employerId = employerIds.map(id => Number(id));
+            }
+
             this.getVacancies(true);
 
             // Объект, который следит за пересечением наблюдаемого элемента и области видимости (root) для запуска подгрузки новой страницы
