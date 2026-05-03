@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'laravel/laravel',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '59cc117006ad03d045aca03b0a949af48c5b5f6e',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -82,6 +82,24 @@
             'reference' => 'ebaaf5be6c0286928352e054f2d5125608e5405e',
             'type' => 'library',
             'install_path' => __DIR__ . '/../egulias/email-validator',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'elastic/transport' => array(
+            'pretty_version' => 'v8.11.0',
+            'version' => '8.11.0.0',
+            'reference' => '1d476af5dc0b74530d59b67d5dd96ee39768d5a4',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../elastic/transport',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'elasticsearch/elasticsearch' => array(
+            'pretty_version' => 'v8.19.0',
+            'version' => '8.19.0.0',
+            'reference' => '1771284cb43a7b653634d418b6f5f0ec84ff8a6d',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../elasticsearch/elasticsearch',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
@@ -389,9 +407,9 @@
             'dev_requirement' => false,
         ),
         'laravel/laravel' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '59cc117006ad03d045aca03b0a949af48c5b5f6e',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -592,6 +610,24 @@
             'aliases' => array(),
             'dev_requirement' => false,
         ),
+        'open-telemetry/api' => array(
+            'pretty_version' => '1.9.0',
+            'version' => '1.9.0.0',
+            'reference' => '6f8d237ce2c304ca85f31970f788e7f074d147be',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../open-telemetry/api',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'open-telemetry/context' => array(
+            'pretty_version' => '1.5.0',
+            'version' => '1.5.0.0',
+            'reference' => '3c414b246e0dabb7d6145404e6a5e4536ca18d07',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../open-telemetry/context',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
         'phar-io/manifest' => array(
             'pretty_version' => '2.0.4',
             'version' => '2.0.4.0',
@@ -609,6 +645,45 @@
             'install_path' => __DIR__ . '/../phar-io/version',
             'aliases' => array(),
             'dev_requirement' => true,
+        ),
+        'php-http/async-client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '*',
+            ),
+        ),
+        'php-http/client-implementation' => array(
+            'dev_requirement' => false,
+            'provided' => array(
+                0 => '*',
+            ),
+        ),
+        'php-http/discovery' => array(
+            'pretty_version' => '1.20.0',
+            'version' => '1.20.0.0',
+            'reference' => '82fe4c73ef3363caed49ff8dd1539ba06044910d',
+            'type' => 'composer-plugin',
+            'install_path' => __DIR__ . '/../php-http/discovery',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'php-http/httplug' => array(
+            'pretty_version' => '2.4.1',
+            'version' => '2.4.1.0',
+            'reference' => '5cad731844891a4c282f3f3e1b582c46839d22f4',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-http/httplug',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'php-http/promise' => array(
+            'pretty_version' => '1.3.1',
+            'version' => '1.3.1.0',
+            'reference' => 'fc85b1fba37c169a69a07ef0d5a8075770cc1f83',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../php-http/promise',
+            'aliases' => array(),
+            'dev_requirement' => false,
         ),
         'phpoption/phpoption' => array(
             'pretty_version' => '1.9.3',
@@ -730,7 +805,8 @@
         'psr/http-client-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0',
+                0 => '*',
+                1 => '1.0',
             ),
         ),
         'psr/http-factory' => array(
@@ -745,7 +821,8 @@
         'psr/http-factory-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0',
+                0 => '*',
+                1 => '1.0',
             ),
         ),
         'psr/http-message' => array(
@@ -760,7 +837,8 @@
         'psr/http-message-implementation' => array(
             'dev_requirement' => false,
             'provided' => array(
-                0 => '1.0',
+                0 => '*',
+                1 => '1.0',
             ),
         ),
         'psr/log' => array(
@@ -1172,6 +1250,15 @@
             'reference' => '60328e362d4c2c802a54fcbf04f9d3fb892b4cf8',
             'type' => 'library',
             'install_path' => __DIR__ . '/../symfony/polyfill-php80',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'symfony/polyfill-php82' => array(
+            'pretty_version' => 'v1.36.0',
+            'version' => '1.36.0.0',
+            'reference' => '34808efe3e68f69685796f7c253a2f1d8ea9df59',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../symfony/polyfill-php82',
             'aliases' => array(),
             'dev_requirement' => false,
         ),

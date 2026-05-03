@@ -77,3 +77,19 @@ services:
         depends_on:
             - app
         container_name: job_finder_frontend
+
+    # ElasticSearch service
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+        volumes:
+            - elasticsearch_data:/usr/share/elasticsearch/data
+        environment:
+            - discovery.type=single-node
+            - xpack.security.enabled=false
+            - ES_JAVA_OPTS=-Xms512m -Xmx512m
+        ports:
+            - "9200:9200"
+        container_name: job_finder_elasticsearch
+
+volumes:
+    elasticsearch_data:
