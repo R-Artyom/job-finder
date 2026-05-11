@@ -31,4 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'elasticsearch' => [
+        'host' => env('ELASTICSEARCH_HOST'),
+        'username' => env('ELASTICSEARCH_USERNAME'),
+        'password' => env('ELASTICSEARCH_PASSWORD'),
+    ],
+
 ];
