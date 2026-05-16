@@ -3,6 +3,7 @@
 namespace App\Services\Vacancies;
 
 use App\Elastic\ElasticClient;
+use App\Models\Vacancy;
 use Elastic\Elasticsearch\Client;
 
 class SearchService
@@ -14,9 +15,9 @@ class SearchService
         $this->client = ElasticClient::make();
     }
 
-    public function search(array $filters = []): array
+    public function search(array $filters = [])
     {
-        $params = [
+        $response = $this->client->search([
             'index' => 'vacancies_v1',
             'body' => [
                 'size' => 20,
@@ -24,10 +25,17 @@ class SearchService
                     'match_all' => (object)[]
                 ]
             ]
-        ];
+        ]);
 
-        return $this->client
-            ->search($params)
-            ->asArray();
+        // Результаты поиска
+        $hits = $response->asArray()['hits']['hits'];
+
+        // Только список id вакансий
+        $ids = collect($hits)
+            ->pluck('_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        return Vacancy::whereIn('id', $ids)->get();
     }
 }
