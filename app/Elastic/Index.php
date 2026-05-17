@@ -4,5 +4,5 @@ namespace App\Elastic;
 
 class Index
 {
-    public const VACANCIES = 'vacancies_v1';
+    public const VACANCIES = 'vacancies_v2';
 }
