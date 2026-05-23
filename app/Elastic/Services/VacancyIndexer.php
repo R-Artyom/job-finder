@@ -3,18 +3,17 @@
 namespace App\Elastic\Services;
 
 use App\Elastic\ElasticClient;
-use App\Elastic\Index;
 use App\Models\Vacancy;
 use Carbon\Carbon;
 
 class VacancyIndexer
 {
-    public function index(Vacancy $vacancy): void
+    public function index(Vacancy $vacancy, string $index): void
     {
         $client = ElasticClient::make();
 
         $client->index([
-            'index' => Index::VACANCIES,
+            'index' => $index,
             'id' => $vacancy->id,
             'body' => [
                 'id' => $vacancy->id,

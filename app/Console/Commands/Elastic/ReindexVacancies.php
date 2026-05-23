@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Elastic;
 
+use App\Elastic\Index;
 use App\Models\Vacancy;
 use App\Elastic\Services\VacancyIndexer;
 use Illuminate\Console\Command;
@@ -31,7 +32,7 @@ class ReindexVacancies extends Command
             ->orderBy('id')
             ->chunkById(1000, function ($vacancies) use ($indexer) {
                 foreach ($vacancies as $vacancy) {
-                    $indexer->index($vacancy);
+                    $indexer->index($vacancy, Index::VACANCIES_CURRENT);
                 }
                 $this->info('Chunk indexed');
             });

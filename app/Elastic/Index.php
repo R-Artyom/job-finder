@@ -4,5 +4,7 @@ namespace App\Elastic;
 
 class Index
 {
-    public const VACANCIES = 'vacancies_v2';
+    // * Индекс "Вакансии"
+    public const VACANCIES_CURRENT = 'vacancies_v2'; // Текущая версия индекса. Используется только для создания индекса и реиндексации, далее по команде "elastic:switch-vacancies-alias {index}" индекс необходимо присвоить псевдониму
+    public const VACANCIES = 'vacancies'; // Псевдоним индекса (alias). Только он используется в коде проекта
 }

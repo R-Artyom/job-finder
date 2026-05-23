@@ -27,15 +27,17 @@ class CreateVacanciesIndex extends Command
      */
     public function handle()
     {
+        $indexName = Index::VACANCIES_CURRENT;
+
         $client = ElasticClient::make();
 
         $config = require app_path('Elastic/Indexes/vacancies.php');
 
         $client->indices()->create([
-            'index' => Index::VACANCIES,
+            'index' => $indexName,
             'body' => $config,
         ]);
 
-        $this->info('Индекс вакансий создан');
+        $this->info("Индекс вакансий {$indexName} создан");
     }
 }
