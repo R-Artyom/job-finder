@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Vacancies\IndexController as VacanciesIndexController;
+use App\Http\Controllers\Vacancies\IndexControllerElastic as VacanciesIndexControllerElastic;
 
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,4 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Вакансии
-Route::get('/vacancies', [VacanciesIndexController::class, '__invoke'])->name('vacancies.index');
+Route::get('/vacancies', [VacanciesIndexControllerElastic::class, '__invoke'])->name('vacancies.index');
