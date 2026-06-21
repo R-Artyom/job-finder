@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 
 class SwitchVacanciesAlias extends Command
 {
-    protected $signature = 'elastic:switch-vacancies-alias {index}';
+    protected $signature = 'elastic:switch-vacancies-alias {index?}';
     protected $description = 'Переключение псевдонима индекса вакансий на новый индекс';
 
     public function handle()
@@ -17,8 +17,15 @@ class SwitchVacanciesAlias extends Command
 
         // Псевдоним индекса вакансий
         $alias = Index::VACANCIES;
+
         // Индекс вакансий, с которым будет ассоциироваться псевдоним (напр. vacancies_v2)
         $newIndex = $this->argument('index');
+        // Если название индекса в команде не указано
+        if (!$newIndex) {
+            // То взять текущий индекс
+            $newIndex = Index::VACANCIES_CURRENT;
+        }
+
         // Действия
         $actions = [];
 
