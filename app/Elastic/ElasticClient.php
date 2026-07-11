@@ -12,7 +12,10 @@ class ElasticClient
         $builder = ClientBuilder::create()
             ->setHosts([
                 config('services.elasticsearch.host'),
-            ]);
+            ])
+            ->setCABundle(
+                config('services.elasticsearch.ca_bundle')
+            );
 
         if (
             config('services.elasticsearch.username') &&

@@ -35,6 +35,7 @@ return [
         'host' => env('ELASTICSEARCH_HOST'),
         'username' => env('ELASTICSEARCH_USERNAME'),
         'password' => env('ELASTICSEARCH_PASSWORD'),
+        'ca_bundle' => env('ELASTICSEARCH_CA_BUNDLE'),
     ],
 
 ];
