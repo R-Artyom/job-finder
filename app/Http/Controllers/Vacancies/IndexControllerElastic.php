@@ -198,7 +198,7 @@ class IndexControllerElastic extends Controller
         $vacanciesModels = $result['vacanciesModels'];
 
         // * Фасеты
-        $facetResults = $this->getFacetOptions($filters, self::FILTERS_FORMAT);
+        $facetResults = $result['facets'];
 
         // * Словари
         // Id работодателей (исключить пустые значения)
@@ -251,40 +251,5 @@ class IndexControllerElastic extends Controller
             'lastElementId' => $lastElementId,
             'filteredElementsCount' => $result['totalCount'],
         ];
-    }
-
-    /**
-     * Фасеты (опции фильтрации)
-     *
-     * @param array $filters Массив фильтров из запроса
-     * @param array $filtersFormat Формат данных
-     * @return array
-     */
-    protected function getFacetOptions(array $filters, array $filtersFormat): array
-    {
-        $facetResults = [];
-        foreach ($filtersFormat as $key => $value) {
-            if ($value['type'] === 'in') {
-                // Полная копия входных фильтров
-                $filtersForFacet = $filters;
-                // Удаление фильтра, для которого будет происходить поиск опций
-                unset($filtersForFacet[$key]);
-                // Формирование запроса
-                $query = Vacancy::query()
-                    ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
-                    ->leftJoin('areas', 'areas.id', 'vacancies.area_id')
-                    ->select($value['column']);
-                // Применить усеченные фильтры
-                $this->applyFiltersToQuery($query, $filtersForFacet, self::FILTERS_FORMAT);
-                // Результат
-                $facetResults[$key] = $query
-                    ->distinct()
-                    ->orderBy($value['column'])
-                    ->pluck($value['column'])
-                    ->toArray();
-            }
-        }
-
-        return $facetResults;
     }
 }

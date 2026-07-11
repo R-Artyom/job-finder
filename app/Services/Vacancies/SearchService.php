@@ -11,6 +11,24 @@ use Elastic\Elasticsearch\Client;
 
 class SearchService
 {
+    private const FACETS = [
+        'employerId' => [
+            'field' => 'employer_id',
+        ],
+        'areaId' => [
+            'field' => 'area_id',
+        ],
+        'countryId' => [
+            'field' => 'country_id',
+        ],
+        'salaryCurrency' => [
+            'field' => 'salary_currency',
+        ],
+        'archived' => [
+            'field' => 'archived',
+        ],
+    ];
+
     private Client $client;
 
     public function __construct()
@@ -18,87 +36,117 @@ class SearchService
         $this->client = ElasticClient::make();
     }
 
-    public function search(SearchDTO $dto)
+    public function search(SearchDTO $dto): array
+    {
+        $query = $this->buildQuery($dto->filters);
+        $sort = $this->buildSort($dto);
+
+        $params = [
+            'index' => Index::VACANCIES,
+            'body' => [
+                'query' => $query,
+                'sort' => $sort,
+                'aggs' => $this->buildAggregations($dto->filters),
+                'size' => $dto->limit,
+            ],
+        ];
+
+        // Cursor pagination (search_after)
+        if ($dto->cursor) {
+            $params['body']['search_after'] = $dto->cursor;
+        }
+
+        // Запрос
+        $response = $this->client->search($params)->asArray();
+
+        return $this->mapSearchResult($response);
+    }
+
+    private function buildQuery(array $filters): array
     {
         // Булевый запрос
-        $query['bool']['filter'] = [];
+        $query = [
+            'bool' => [
+                'filter' => [],
+                'must' => [],
+            ],
+        ];
 
         // * "in" - фильтр по значению
         // Id работодателя
-        if (!empty($dto->filters['employerId'])) {
+        if (!empty($filters['employerId'])) {
             $query['bool']['filter'][] = [
                 'terms' => [
-                    'employer_id' => $dto->filters['employerId'],
+                    'employer_id' => $filters['employerId'],
                 ],
             ];
         }
         // Id региона
-        if (!empty($dto->filters['areaId'])) {
+        if (!empty($filters['areaId'])) {
             $query['bool']['filter'][] = [
                 'terms' => [
-                    'area_id' => $dto->filters['areaId'],
+                    'area_id' => $filters['areaId'],
                 ],
             ];
         }
         // Валюта
-        if (!empty($dto->filters['salaryCurrency'])) {
+        if (!empty($filters['salaryCurrency'])) {
             $query['bool']['filter'][] = [
                 'terms' => [
-                    'salary_currency' => $dto->filters['salaryCurrency'],
+                    'salary_currency' => $filters['salaryCurrency'],
                 ],
             ];
         }
         // В архиве
-        if (!empty($dto->filters['archived'])) {
+        if (!empty($filters['archived'])) {
             $query['bool']['filter'][] = [
                 'terms' => [
-                    'archived' => array_map('boolval', $dto->filters['archived']),
+                    'archived' => array_map('boolval', $filters['archived']),
                 ],
             ];
         }
         // Id страны
-        if (!empty($dto->filters['countryId'])) {
+        if (!empty($filters['countryId'])) {
             $query['bool']['filter'][] = [
                 'terms' => [
-                    'country_id' => $dto->filters['countryId'],
+                    'country_id' => $filters['countryId'],
                 ],
             ];
         }
 
         // * "like" - фильтр по шаблону
         // Название вакансии
-        $query['bool']['must'] = [];
-        if (!empty($dto->filters['name'])) {
+        if (!empty($filters['name'])) {
             $query['bool']['must'][] = [
                 'match' => [
-                    'name' => $dto->filters['name'],
+                    'name' => $filters['name'],
                 ],
             ];
         }
         // Описание вакансии
-        if (!empty($dto->filters['description'])) {
+        if (!empty($filters['description'])) {
             $query['bool']['must'][] = [
                 'match' => [
-                    'description' => $dto->filters['description'],
+                    'description' => $filters['description'],
                 ],
             ];
         }
         // Название работодателя
-        if (!empty($dto->filters['employerName'])) {
+        if (!empty($filters['employerName'])) {
             $query['bool']['must'][] = [
                 'match' => [
-                    'employer_name' => $dto->filters['employerName'],
+                    'employer_name' => $filters['employerName'],
                 ],
             ];
         }
 
         // * "from" - фильтр "От"
         // ЗП от
-        if (isset($dto->filters['salaryFrom'])) {
+        if (isset($filters['salaryFrom'])) {
             $query['bool']['filter'][] = [
                 'range' => [
                     'salary_from' => [
-                        'gte' => $dto->filters['salaryFrom'],
+                        'gte' => $filters['salaryFrom'],
                     ],
                 ],
             ];
@@ -106,11 +154,11 @@ class SearchService
 
         // * "to" - фильтр "До"
         // ЗП до
-        if (isset($dto->filters['salaryTo'])) {
+        if (isset($filters['salaryTo'])) {
             $query['bool']['filter'][] = [
                 'range' => [
                     'salary_to' => [
-                        'lte' => $dto->filters['salaryTo'],
+                        'lte' => $filters['salaryTo'],
                     ],
                 ],
             ];
@@ -118,19 +166,19 @@ class SearchService
 
         // * "date" - фильтр по дате
         // Опубликовано
-        if (!empty($dto->filters['publishedAt'])) {
-            if (!empty($dto->filters['publishedAt'][0]) && !empty($dto->filters['publishedAt'][1])) {
+        if (!empty($filters['publishedAt'])) {
+            if (!empty($filters['publishedAt'][0]) && !empty($filters['publishedAt'][1])) {
                 $publishedAt = [
-                    'gte' => Carbon::parse($dto->filters['publishedAt'][0])->toISOString(),
-                    'lte' => Carbon::parse($dto->filters['publishedAt'][1])->toISOString(),
+                    'gte' => Carbon::parse($filters['publishedAt'][0])->toISOString(),
+                    'lte' => Carbon::parse($filters['publishedAt'][1])->toISOString(),
                 ];
-            } elseif (!empty($dto->filters['publishedAt'][0])) {
+            } elseif (!empty($filters['publishedAt'][0])) {
                 $publishedAt = [
-                    'gte' => Carbon::parse($dto->filters['publishedAt'][0])->toISOString(),
+                    'gte' => Carbon::parse($filters['publishedAt'][0])->toISOString(),
                 ];
             } else {
                 $publishedAt = [
-                    'lte' => Carbon::parse($dto->filters['publishedAt'][1])->toISOString(),
+                    'lte' => Carbon::parse($filters['publishedAt'][1])->toISOString(),
                 ];
             }
             $query['bool']['filter'][] = [
@@ -141,19 +189,19 @@ class SearchService
         }
 
         // Создано
-        if (!empty($dto->filters['createdAt'])) {
-            if (!empty($dto->filters['createdAt'][0]) && !empty($dto->filters['createdAt'][1])) {
+        if (!empty($filters['createdAt'])) {
+            if (!empty($filters['createdAt'][0]) && !empty($filters['createdAt'][1])) {
                 $createdAt = [
-                    'gte' => Carbon::parse($dto->filters['createdAt'][0])->toISOString(),
-                    'lte' => Carbon::parse($dto->filters['createdAt'][1])->toISOString(),
+                    'gte' => Carbon::parse($filters['createdAt'][0])->toISOString(),
+                    'lte' => Carbon::parse($filters['createdAt'][1])->toISOString(),
                 ];
-            } elseif (!empty($dto->filters['createdAt'][0])) {
+            } elseif (!empty($filters['createdAt'][0])) {
                 $createdAt = [
-                    'gte' => Carbon::parse($dto->filters['createdAt'][0])->toISOString(),
+                    'gte' => Carbon::parse($filters['createdAt'][0])->toISOString(),
                 ];
             } else {
                 $createdAt = [
-                    'lte' => Carbon::parse($dto->filters['createdAt'][1])->toISOString(),
+                    'lte' => Carbon::parse($filters['createdAt'][1])->toISOString(),
                 ];
             }
             $query['bool']['filter'][] = [
@@ -163,7 +211,12 @@ class SearchService
             ];
         }
 
-        // 1. Формирование 'sort' для Elasticsearch
+        return $query;
+    }
+
+    private function buildSort(SearchDTO $dto): array
+    {
+        // Формирование 'sort' для Elasticsearch
         $sort = [];
         foreach ($dto->sort as $item) {
             $field = array_key_first($item);
@@ -175,25 +228,35 @@ class SearchService
             ];
         }
 
-        // 2. Базовые параметры
-        $params = [
-            'index' => Index::VACANCIES,
-            'body' => [
-                'size' => $dto->limit,
-                'query' => $query,
-                'sort' => $sort,
-            ]
-        ];
+        return $sort;
+    }
 
-        // 3. Cursor pagination (search_after)
-        if ($dto->cursor) {
-            $params['body']['search_after'] = $dto->cursor;
+    private function buildAggregations($filters): array
+    {
+        $aggregations = [];
+
+        foreach (self::FACETS as $facetName => $config) {
+            $facetFilters = $filters;
+            unset($facetFilters[$facetName]);
+            $aggregations[$facetName] = [
+                'filter' => $this->buildQuery($facetFilters),
+                'aggs' => [
+                    'values' => [
+                        'terms' => [
+                            'field' => $config['field'],
+                            'size' => 10000,
+                        ],
+                    ],
+                ],
+            ];
         }
 
-        // 4. Запрос
-        $response = $this->client->search($params)->asArray();
+        return $aggregations;
+    }
 
-        // 5. Получить cursor следующей страницы
+    public function mapSearchResult($response): array
+    {
+        // 1. Получить cursor следующей страницы
         $hits = $response['hits']['hits'];
         $nextCursor = null;
         if (!empty($hits)) {
@@ -203,7 +266,7 @@ class SearchService
 
 //        dd(array_column($hits, '_source'));
 
-        // 6. Получить модели вакансий по списку id
+        // 2. Получить модели вакансий по списку id
         $ids = collect($hits)
             ->pluck('_id')
             ->map(fn ($id) => (int) $id)
@@ -212,7 +275,7 @@ class SearchService
             ->leftJoin('employers', 'employers.id', 'vacancies.employer_id')
             ->leftJoin('areas', 'areas.id', 'vacancies.area_id')
             ->select(
-                // №
+            // №
                 'vacancies.id',
                 // Название
                 'vacancies.name',
@@ -242,7 +305,7 @@ class SearchService
             ->whereIn('vacancies.id', $ids)
             ->get();
 
-        // 7. Отсортировать вакансии, как в ElasticSearch
+        // 3. Отсортировать вакансии, как в ElasticSearch
         $order = array_flip($ids);
         $vacanciesModels = $vacanciesModels
             ->sortBy(fn ($item) => $order[$item->id])
@@ -252,6 +315,20 @@ class SearchService
             'vacanciesModels' => $vacanciesModels,
             'next' => $nextCursor,
             'totalCount' => $response['hits']['total']['value'],
+            'facets' => $this->parseAggregations($response),
         ];
+    }
+
+    private function parseAggregations(array $response): array
+    {
+        $result = [];
+
+        foreach ($response['aggregations'] as $name => $aggregation) {
+            $result[$name] = collect($aggregation['values']['buckets'])
+                ->pluck('key')
+                ->all();
+        }
+
+        return $result;
     }
 }
