@@ -194,11 +194,11 @@ class IndexControllerElastic extends Controller
         // Найти все вакансии в соотвествии с фисльтрами и сортировкой
         $result = app(SearchService::class)->search($dto);
 
-        // Найденные мождели вакансий
-        $vacanciesModels = $result['vacanciesModels'];
+        // Найденные модели вакансий
+        $vacanciesModels = $result->vacancies;
 
         // * Фасеты
-        $facetResults = $result['facets'];
+        $facetResults = $result->facets;
 
         // * Словари
         // Id работодателей (исключить пустые значения)
@@ -246,10 +246,10 @@ class IndexControllerElastic extends Controller
             'dictionaries' => $dictionaries,
             'pagination' => [
                 'limit' => $limit,
-                'next' => $result['next'],
+                'next' => $result->nextCursor,
             ],
             'lastElementId' => $lastElementId,
-            'filteredElementsCount' => $result['totalCount'],
+            'filteredElementsCount' => $result->totalCount,
         ];
     }
 }

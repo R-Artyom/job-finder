@@ -4,11 +4,9 @@ namespace App\Services\Vacancies;
 
 use App\DTO\Vacancies\SearchDTO;
 use App\Elastic\ElasticClient;
-use App\Elastic\Index;
-use App\Services\Vacancies\Aggregation\AggregationBuilder;
-use App\Services\Vacancies\Mapper\SearchResultMapper;
-use App\Services\Vacancies\Query\QueryBuilder;
-use App\Services\Vacancies\Sort\SortBuilder;
+use App\Services\Vacancies\DTO\SearchResponse;
+use App\Services\Vacancies\Mapper\SearchResponseParser;
+use App\Services\Vacancies\Request\SearchRequestBuilder;
 use Elastic\Elasticsearch\Client;
 
 class SearchService
@@ -16,36 +14,19 @@ class SearchService
     private Client $client;
 
     public function __construct(
-        private AggregationBuilder $aggregationBuilder,
-        private QueryBuilder $queryBuilder,
-        private SearchResultMapper $searchResultMapper,
-        private SortBuilder $sortBuilder,
+        private SearchRequestBuilder $requestBuilder,
+        private SearchResponseParser $searchResponseParser,
     ) {
         $this->client = ElasticClient::make();
     }
 
-    public function search(SearchDTO $dto): array
+    public function search(SearchDTO $dto): SearchResponse
     {
-        $params = [
-            'index' => Index::VACANCIES,
-            'body' => [
-                'query' => $this->queryBuilder->build($dto->filters),
-                'sort' => $this->sortBuilder->build($dto),
-                'aggs' => $this->aggregationBuilder->build($dto->filters),
-                'size' => $dto->limit,
-            ],
-        ];
-
-        // Cursor pagination (search_after)
-        if ($dto->cursor) {
-            $params['body']['search_after'] = $dto->cursor;
-        }
-
-        // Запрос
         $response = $this->client
-            ->search($params)
+            ->search($this->requestBuilder->build($dto))
             ->asArray();
 
-        return $this->searchResultMapper->map($response);
+        return $this->searchResponseParser->map($response);
     }
+
 }

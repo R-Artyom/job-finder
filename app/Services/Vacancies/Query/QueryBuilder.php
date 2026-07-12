@@ -164,52 +164,50 @@ class QueryBuilder
     private function addPublishedAtFilter(array &$query, array $filters): void
     {
         // Опубликовано
-        if (!empty($filters['publishedAt'])) {
-            if (!empty($filters['publishedAt'][0]) && !empty($filters['publishedAt'][1])) {
-                $publishedAt = [
-                    'gte' => Carbon::parse($filters['publishedAt'][0])->toISOString(),
-                    'lte' => Carbon::parse($filters['publishedAt'][1])->toISOString(),
-                ];
-            } elseif (!empty($filters['publishedAt'][0])) {
-                $publishedAt = [
-                    'gte' => Carbon::parse($filters['publishedAt'][0])->toISOString(),
-                ];
-            } else {
-                $publishedAt = [
-                    'lte' => Carbon::parse($filters['publishedAt'][1])->toISOString(),
-                ];
-            }
-            $query['bool']['filter'][] = [
-                'range' => [
-                    'published_at' => $publishedAt,
-                ],
-            ];
+        $range = $this->buildDateRange($filters['publishedAt'] ?? []);
+
+        if ($range === null) {
+            return;
         }
+
+        $query['bool']['filter'][] = [
+            'range' => [
+                'published_at' => $range,
+            ],
+        ];
     }
 
     private function addCreatedAtFilter(array &$query, array $filters): void
     {
         // Создано
-        if (!empty($filters['createdAt'])) {
-            if (!empty($filters['createdAt'][0]) && !empty($filters['createdAt'][1])) {
-                $createdAt = [
-                    'gte' => Carbon::parse($filters['createdAt'][0])->toISOString(),
-                    'lte' => Carbon::parse($filters['createdAt'][1])->toISOString(),
-                ];
-            } elseif (!empty($filters['createdAt'][0])) {
-                $createdAt = [
-                    'gte' => Carbon::parse($filters['createdAt'][0])->toISOString(),
-                ];
-            } else {
-                $createdAt = [
-                    'lte' => Carbon::parse($filters['createdAt'][1])->toISOString(),
-                ];
-            }
-            $query['bool']['filter'][] = [
-                'range' => [
-                    'created_at' => $createdAt,
-                ],
-            ];
+        $range = $this->buildDateRange($filters['createdAt'] ?? []);
+
+        if ($range === null) {
+            return;
         }
+
+        $query['bool']['filter'][] = [
+            'range' => [
+                'created_at' => $range,
+            ],
+        ];
+    }
+
+    // Построение диапазона дат
+    private function buildDateRange(array $range): ?array
+    {
+        if (empty($range)) {
+            return null;
+        }
+
+        $result = [];
+        if (!empty($range[0])) {
+            $result['gte'] = Carbon::parse($range[0])->toISOString();
+        }
+        if (!empty($range[1])) {
+            $result['lte'] = Carbon::parse($range[1])->toISOString();
+        }
+
+        return $result ?: null;
     }
 }
