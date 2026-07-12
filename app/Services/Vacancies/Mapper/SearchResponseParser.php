@@ -33,20 +33,7 @@ class SearchResponseParser
             vacancies: $this->vacancyLoader->load($ids),
             nextCursor: $nextCursor,
             totalCount: $response['hits']['total']['value'],
-            facets: $this->parseAggregations($response),
+            facets: [],
         );
-    }
-
-    private function parseAggregations(array $response): array
-    {
-        $result = [];
-
-        foreach ($response['aggregations'] as $name => $aggregation) {
-            $result[$name] = collect($aggregation['values']['buckets'])
-                ->pluck('key')
-                ->all();
-        }
-
-        return $result;
     }
 }

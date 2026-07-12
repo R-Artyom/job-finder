@@ -7,9 +7,19 @@ use Illuminate\Support\Collection;
 class SearchResponse
 {
     public function __construct(
-        public readonly Collection $vacancies,
-        public readonly ?array $nextCursor,
-        public readonly int $totalCount,
-        public readonly array $facets,
+        public Collection $vacancies,
+        public ?array $nextCursor,
+        public int $totalCount,
+        public array $facets = [],
     ) {}
+
+    public function withFacets(array $facets): self
+    {
+        return new self(
+            vacancies: $this->vacancies,
+            nextCursor: $this->nextCursor,
+            totalCount: $this->totalCount,
+            facets: $facets,
+        );
+    }
 }

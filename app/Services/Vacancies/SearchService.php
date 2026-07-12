@@ -5,6 +5,7 @@ namespace App\Services\Vacancies;
 use App\DTO\Vacancies\SearchDTO;
 use App\Elastic\ElasticClient;
 use App\Services\Vacancies\DTO\SearchResponse;
+use App\Services\Vacancies\Facet\FacetService;
 use App\Services\Vacancies\Mapper\SearchResponseParser;
 use App\Services\Vacancies\Request\SearchRequestBuilder;
 use Elastic\Elasticsearch\Client;
@@ -15,7 +16,8 @@ class SearchService
 
     public function __construct(
         private SearchRequestBuilder $requestBuilder,
-        private SearchResponseParser $searchResponseParser,
+        private SearchResponseParser $parser,
+        private FacetService $facetService,
     ) {
         $this->client = ElasticClient::make();
     }
@@ -26,7 +28,8 @@ class SearchService
             ->search($this->requestBuilder->build($dto))
             ->asArray();
 
-        return $this->searchResponseParser->map($response);
+        return $this->parser
+            ->map($response)
+            ->withFacets($this->facetService->load($dto->filters));
     }
-
 }
