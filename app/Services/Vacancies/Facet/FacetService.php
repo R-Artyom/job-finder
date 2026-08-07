@@ -7,7 +7,8 @@ use App\Services\Vacancies\Query\QueryBuilder;
 class FacetService
 {
     private const FACETS = [
-        'employerId' => 'employer_id',
+        // TODO фасеты работодателя временно отключены, чтобы не грузить страницу миллионами значений
+        //'employerId' => 'employer_id',
         'areaId' => 'area_id',
         'countryId' => 'country_id',
         'salaryCurrency' => 'salary_currency',
