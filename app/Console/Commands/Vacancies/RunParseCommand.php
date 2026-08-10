@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Vacancies;
 
+use App\Http\Controllers\Vacancies\RunHtmlParseController;
 use App\Http\Controllers\Vacancies\RunParseController;
 use Illuminate\Console\Command;
 
@@ -30,6 +31,12 @@ class RunParseCommand extends Command
         $counterName = $this->argument('counterName');
 
         // Запуск разбора вакансии с передачей названия счетчика
-        (new RunParseController)($counterName);
+        if (config('enable.htmlParse') === true) {
+            // HTML-парсинг
+            (new RunHtmlParseController)($counterName);
+        } else {
+            // API-парсинг
+            (new RunParseController)($counterName);
+        }
     }
 }
