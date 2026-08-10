@@ -6,4 +6,7 @@ return [
 
     // Разрешение отправки Telegram уведомлений об ошибках
     'telegramNotifications' => env('ENABLE_TELEGRAM_NOTIFICATIONS', false),
+
+    // Разрешение HTML-парсинга вакансий
+    'htmlParse' => env('ENABLE_HTML_PARSE', false),
 ];

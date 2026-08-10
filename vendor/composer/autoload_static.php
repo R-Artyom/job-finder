@@ -40,23 +40,23 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
     );
 
     public static $prefixLengthsPsr4 = array (
-        'v' => 
+        'v' =>
         array (
             'voku\\' => 5,
         ),
-        'W' => 
+        'W' =>
         array (
             'Whoops\\' => 7,
             'Webmozart\\Assert\\' => 17,
         ),
-        'T' => 
+        'T' =>
         array (
             'TijsVerkoyen\\CssToInlineStyles\\' => 31,
             'Tests\\' => 6,
             'Termwind\\' => 9,
             'Telegram\\Bot\\' => 13,
         ),
-        'S' => 
+        'S' =>
         array (
             'Symfony\\Polyfill\\Uuid\\' => 22,
             'Symfony\\Polyfill\\Php83\\' => 23,
@@ -83,6 +83,7 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'Symfony\\Component\\Finder\\' => 25,
             'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\ErrorHandler\\' => 31,
+            'Symfony\\Component\\DomCrawler\\' => 29,
             'Symfony\\Component\\CssSelector\\' => 30,
             'Symfony\\Component\\Console\\' => 26,
             'Spatie\\LaravelIgnition\\' => 23,
@@ -91,12 +92,12 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'Spatie\\ErrorSolutions\\' => 22,
             'Spatie\\Backtrace\\' => 17,
         ),
-        'R' => 
+        'R' =>
         array (
             'Ramsey\\Uuid\\' => 12,
             'Ramsey\\Collection\\' => 18,
         ),
-        'P' => 
+        'P' =>
         array (
             'Psy\\' => 4,
             'Psr\\SimpleCache\\' => 16,
@@ -109,16 +110,17 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'PhpParser\\' => 10,
             'PhpOption\\' => 10,
         ),
-        'N' => 
+        'N' =>
         array (
             'NunoMaduro\\Collision\\' => 21,
         ),
-        'M' => 
+        'M' =>
         array (
             'Monolog\\' => 8,
             'Mockery\\' => 8,
+            'Masterminds\\' => 12,
         ),
-        'L' => 
+        'L' =>
         array (
             'League\\MimeTypeDetection\\' => 25,
             'League\\Flysystem\\Local\\' => 23,
@@ -132,12 +134,12 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'Laravel\\Sail\\' => 13,
             'Laravel\\Prompts\\' => 16,
         ),
-        'I' => 
+        'I' =>
         array (
             'Illuminate\\Support\\' => 19,
             'Illuminate\\' => 11,
         ),
-        'G' => 
+        'G' =>
         array (
             'GuzzleHttp\\UriTemplate\\' => 23,
             'GuzzleHttp\\Psr7\\' => 16,
@@ -145,16 +147,16 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'GuzzleHttp\\' => 11,
             'GrahamCampbell\\ResultType\\' => 26,
         ),
-        'F' => 
+        'F' =>
         array (
             'Fruitcake\\Cors\\' => 15,
             'Faker\\' => 6,
         ),
-        'E' => 
+        'E' =>
         array (
             'Egulias\\EmailValidator\\' => 23,
         ),
-        'D' => 
+        'D' =>
         array (
             'Dotenv\\' => 7,
             'Doctrine\\Inflector\\' => 19,
@@ -164,375 +166,383 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
             'Database\\Seeders\\' => 17,
             'Database\\Factories\\' => 19,
         ),
-        'C' => 
+        'C' =>
         array (
             'Cron\\' => 5,
             'Carbon\\Doctrine\\' => 16,
             'Carbon\\' => 7,
         ),
-        'B' => 
+        'B' =>
         array (
             'Brick\\Math\\' => 11,
         ),
-        'A' => 
+        'A' =>
         array (
             'App\\' => 4,
         ),
     );
 
     public static $prefixDirsPsr4 = array (
-        'voku\\' => 
+        'voku\\' =>
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
         ),
-        'Whoops\\' => 
+        'Whoops\\' =>
         array (
             0 => __DIR__ . '/..' . '/filp/whoops/src/Whoops',
         ),
-        'Webmozart\\Assert\\' => 
+        'Webmozart\\Assert\\' =>
         array (
             0 => __DIR__ . '/..' . '/webmozart/assert/src',
         ),
-        'TijsVerkoyen\\CssToInlineStyles\\' => 
+        'TijsVerkoyen\\CssToInlineStyles\\' =>
         array (
             0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
         ),
-        'Tests\\' => 
+        'Tests\\' =>
         array (
             0 => __DIR__ . '/../..' . '/tests',
         ),
-        'Termwind\\' => 
+        'Termwind\\' =>
         array (
             0 => __DIR__ . '/..' . '/nunomaduro/termwind/src',
         ),
-        'Telegram\\Bot\\' => 
+        'Telegram\\Bot\\' =>
         array (
             0 => __DIR__ . '/..' . '/irazasyed/telegram-bot-sdk/src',
         ),
-        'Symfony\\Polyfill\\Uuid\\' => 
+        'Symfony\\Polyfill\\Uuid\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-uuid',
         ),
-        'Symfony\\Polyfill\\Php83\\' => 
+        'Symfony\\Polyfill\\Php83\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php83',
         ),
-        'Symfony\\Polyfill\\Php80\\' => 
+        'Symfony\\Polyfill\\Php80\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-php80',
         ),
-        'Symfony\\Polyfill\\Mbstring\\' => 
+        'Symfony\\Polyfill\\Mbstring\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
         ),
-        'Symfony\\Polyfill\\Intl\\Normalizer\\' => 
+        'Symfony\\Polyfill\\Intl\\Normalizer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer',
         ),
-        'Symfony\\Polyfill\\Intl\\Idn\\' => 
+        'Symfony\\Polyfill\\Intl\\Idn\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-idn',
         ),
-        'Symfony\\Polyfill\\Intl\\Grapheme\\' => 
+        'Symfony\\Polyfill\\Intl\\Grapheme\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme',
         ),
-        'Symfony\\Polyfill\\Ctype\\' => 
+        'Symfony\\Polyfill\\Ctype\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
-        'Symfony\\Contracts\\Translation\\' => 
+        'Symfony\\Contracts\\Translation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/translation-contracts',
         ),
-        'Symfony\\Contracts\\Service\\' => 
+        'Symfony\\Contracts\\Service\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/service-contracts',
         ),
-        'Symfony\\Contracts\\EventDispatcher\\' => 
+        'Symfony\\Contracts\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher-contracts',
         ),
-        'Symfony\\Component\\Yaml\\' => 
+        'Symfony\\Component\\Yaml\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/yaml',
         ),
-        'Symfony\\Component\\VarDumper\\' => 
+        'Symfony\\Component\\VarDumper\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/var-dumper',
         ),
-        'Symfony\\Component\\Uid\\' => 
+        'Symfony\\Component\\Uid\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/uid',
         ),
-        'Symfony\\Component\\Translation\\' => 
+        'Symfony\\Component\\Translation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/translation',
         ),
-        'Symfony\\Component\\String\\' => 
+        'Symfony\\Component\\String\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/string',
         ),
-        'Symfony\\Component\\Routing\\' => 
+        'Symfony\\Component\\Routing\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/routing',
         ),
-        'Symfony\\Component\\Process\\' => 
+        'Symfony\\Component\\Process\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/process',
         ),
-        'Symfony\\Component\\Mime\\' => 
+        'Symfony\\Component\\Mime\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/mime',
         ),
-        'Symfony\\Component\\Mailer\\' => 
+        'Symfony\\Component\\Mailer\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/mailer',
         ),
-        'Symfony\\Component\\HttpKernel\\' => 
+        'Symfony\\Component\\HttpKernel\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-kernel',
         ),
-        'Symfony\\Component\\HttpFoundation\\' => 
+        'Symfony\\Component\\HttpFoundation\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/http-foundation',
         ),
-        'Symfony\\Component\\Finder\\' => 
+        'Symfony\\Component\\Finder\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/finder',
         ),
-        'Symfony\\Component\\EventDispatcher\\' => 
+        'Symfony\\Component\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
         ),
-        'Symfony\\Component\\ErrorHandler\\' => 
+        'Symfony\\Component\\ErrorHandler\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/error-handler',
         ),
-        'Symfony\\Component\\CssSelector\\' => 
+        'Symfony\\Component\\DomCrawler\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/symfony/dom-crawler',
+        ),
+        'Symfony\\Component\\CssSelector\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/css-selector',
         ),
-        'Symfony\\Component\\Console\\' => 
+        'Symfony\\Component\\Console\\' =>
         array (
             0 => __DIR__ . '/..' . '/symfony/console',
         ),
-        'Spatie\\LaravelIgnition\\' => 
+        'Spatie\\LaravelIgnition\\' =>
         array (
-            0 => __DIR__ . '/..' . '/spatie/error-solutions/legacy/laravel-ignition',
-            1 => __DIR__ . '/..' . '/spatie/laravel-ignition/src',
+            0 => __DIR__ . '/..' . '/spatie/laravel-ignition/src',
+            1 => __DIR__ . '/..' . '/spatie/error-solutions/legacy/laravel-ignition',
         ),
-        'Spatie\\Ignition\\' => 
+        'Spatie\\Ignition\\' =>
         array (
-            0 => __DIR__ . '/..' . '/spatie/error-solutions/legacy/ignition',
-            1 => __DIR__ . '/..' . '/spatie/ignition/src',
+            0 => __DIR__ . '/..' . '/spatie/ignition/src',
+            1 => __DIR__ . '/..' . '/spatie/error-solutions/legacy/ignition',
         ),
-        'Spatie\\FlareClient\\' => 
+        'Spatie\\FlareClient\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/flare-client-php/src',
         ),
-        'Spatie\\ErrorSolutions\\' => 
+        'Spatie\\ErrorSolutions\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/error-solutions/src',
         ),
-        'Spatie\\Backtrace\\' => 
+        'Spatie\\Backtrace\\' =>
         array (
             0 => __DIR__ . '/..' . '/spatie/backtrace/src',
         ),
-        'Ramsey\\Uuid\\' => 
+        'Ramsey\\Uuid\\' =>
         array (
             0 => __DIR__ . '/..' . '/ramsey/uuid/src',
         ),
-        'Ramsey\\Collection\\' => 
+        'Ramsey\\Collection\\' =>
         array (
             0 => __DIR__ . '/..' . '/ramsey/collection/src',
         ),
-        'Psy\\' => 
+        'Psy\\' =>
         array (
             0 => __DIR__ . '/..' . '/psy/psysh/src',
         ),
-        'Psr\\SimpleCache\\' => 
+        'Psr\\SimpleCache\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/simple-cache/src',
         ),
-        'Psr\\Log\\' => 
+        'Psr\\Log\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/log/src',
         ),
-        'Psr\\Http\\Message\\' => 
+        'Psr\\Http\\Message\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-factory/src',
             1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
-        'Psr\\Http\\Client\\' => 
+        'Psr\\Http\\Client\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/http-client/src',
         ),
-        'Psr\\EventDispatcher\\' => 
+        'Psr\\EventDispatcher\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/event-dispatcher/src',
         ),
-        'Psr\\Container\\' => 
+        'Psr\\Container\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/container/src',
         ),
-        'Psr\\Clock\\' => 
+        'Psr\\Clock\\' =>
         array (
             0 => __DIR__ . '/..' . '/psr/clock/src',
         ),
-        'PhpParser\\' => 
+        'PhpParser\\' =>
         array (
             0 => __DIR__ . '/..' . '/nikic/php-parser/lib/PhpParser',
         ),
-        'PhpOption\\' => 
+        'PhpOption\\' =>
         array (
             0 => __DIR__ . '/..' . '/phpoption/phpoption/src/PhpOption',
         ),
-        'NunoMaduro\\Collision\\' => 
+        'NunoMaduro\\Collision\\' =>
         array (
             0 => __DIR__ . '/..' . '/nunomaduro/collision/src',
         ),
-        'Monolog\\' => 
+        'Monolog\\' =>
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
-        'Mockery\\' => 
+        'Mockery\\' =>
         array (
             0 => __DIR__ . '/..' . '/mockery/mockery/library/Mockery',
         ),
-        'League\\MimeTypeDetection\\' => 
+        'Masterminds\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/masterminds/html5/src',
+        ),
+        'League\\MimeTypeDetection\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/mime-type-detection/src',
         ),
-        'League\\Flysystem\\Local\\' => 
+        'League\\Flysystem\\Local\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem-local',
         ),
-        'League\\Flysystem\\' => 
+        'League\\Flysystem\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/flysystem/src',
         ),
-        'League\\Event\\' => 
+        'League\\Event\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/event/src',
         ),
-        'League\\Config\\' => 
+        'League\\Config\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/config/src',
         ),
-        'League\\CommonMark\\' => 
+        'League\\CommonMark\\' =>
         array (
             0 => __DIR__ . '/..' . '/league/commonmark/src',
         ),
-        'Laravel\\Tinker\\' => 
+        'Laravel\\Tinker\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/tinker/src',
         ),
-        'Laravel\\SerializableClosure\\' => 
+        'Laravel\\SerializableClosure\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/serializable-closure/src',
         ),
-        'Laravel\\Sanctum\\' => 
+        'Laravel\\Sanctum\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/sanctum/src',
         ),
-        'Laravel\\Sail\\' => 
+        'Laravel\\Sail\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/sail/src',
         ),
-        'Laravel\\Prompts\\' => 
+        'Laravel\\Prompts\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/prompts/src',
         ),
-        'Illuminate\\Support\\' => 
+        'Illuminate\\Support\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Macroable',
             1 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Collections',
             2 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate/Conditionable',
         ),
-        'Illuminate\\' => 
+        'Illuminate\\' =>
         array (
             0 => __DIR__ . '/..' . '/laravel/framework/src/Illuminate',
         ),
-        'GuzzleHttp\\UriTemplate\\' => 
+        'GuzzleHttp\\UriTemplate\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/uri-template/src',
         ),
-        'GuzzleHttp\\Psr7\\' => 
+        'GuzzleHttp\\Psr7\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/psr7/src',
         ),
-        'GuzzleHttp\\Promise\\' => 
+        'GuzzleHttp\\Promise\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/promises/src',
         ),
-        'GuzzleHttp\\' => 
+        'GuzzleHttp\\' =>
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'GrahamCampbell\\ResultType\\' => 
+        'GrahamCampbell\\ResultType\\' =>
         array (
             0 => __DIR__ . '/..' . '/graham-campbell/result-type/src',
         ),
-        'Fruitcake\\Cors\\' => 
+        'Fruitcake\\Cors\\' =>
         array (
             0 => __DIR__ . '/..' . '/fruitcake/php-cors/src',
         ),
-        'Faker\\' => 
+        'Faker\\' =>
         array (
             0 => __DIR__ . '/..' . '/fakerphp/faker/src/Faker',
         ),
-        'Egulias\\EmailValidator\\' => 
+        'Egulias\\EmailValidator\\' =>
         array (
             0 => __DIR__ . '/..' . '/egulias/email-validator/src',
         ),
-        'Dotenv\\' => 
+        'Dotenv\\' =>
         array (
             0 => __DIR__ . '/..' . '/vlucas/phpdotenv/src',
         ),
-        'Doctrine\\Inflector\\' => 
+        'Doctrine\\Inflector\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/lib/Doctrine/Inflector',
         ),
-        'Doctrine\\Common\\Lexer\\' => 
+        'Doctrine\\Common\\Lexer\\' =>
         array (
             0 => __DIR__ . '/..' . '/doctrine/lexer/src',
         ),
-        'Dflydev\\DotAccessData\\' => 
+        'Dflydev\\DotAccessData\\' =>
         array (
             0 => __DIR__ . '/..' . '/dflydev/dot-access-data/src',
         ),
-        'DeepCopy\\' => 
+        'DeepCopy\\' =>
         array (
             0 => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy',
         ),
-        'Database\\Seeders\\' => 
+        'Database\\Seeders\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/seeders',
             1 => __DIR__ . '/..' . '/laravel/pint/database/seeders',
         ),
-        'Database\\Factories\\' => 
+        'Database\\Factories\\' =>
         array (
             0 => __DIR__ . '/../..' . '/database/factories',
             1 => __DIR__ . '/..' . '/laravel/pint/database/factories',
         ),
-        'Cron\\' => 
+        'Cron\\' =>
         array (
             0 => __DIR__ . '/..' . '/dragonmantank/cron-expression/src/Cron',
         ),
-        'Carbon\\Doctrine\\' => 
+        'Carbon\\Doctrine\\' =>
         array (
             0 => __DIR__ . '/..' . '/carbonphp/carbon-doctrine-types/src/Carbon/Doctrine',
         ),
-        'Carbon\\' => 
+        'Carbon\\' =>
         array (
             0 => __DIR__ . '/..' . '/nesbot/carbon/src/Carbon',
         ),
-        'Brick\\Math\\' => 
+        'Brick\\Math\\' =>
         array (
             0 => __DIR__ . '/..' . '/brick/math/src',
         ),
-        'App\\' => 
+        'App\\' =>
         array (
             0 => __DIR__ . '/../..' . '/app',
             1 => __DIR__ . '/..' . '/laravel/pint/app',
@@ -540,14 +550,19 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
     );
 
     public static $classMap = array (
+        'App\\Console\\Commands\\Areas\\RunParseCommand' => __DIR__ . '/../..' . '/app/Console/Commands/Areas/RunParseCommand.php',
+        'App\\Console\\Commands\\Employers\\RunParseCommand' => __DIR__ . '/../..' . '/app/Console/Commands/Employers/RunParseCommand.php',
         'App\\Console\\Commands\\Vacancies\\RunParseCommand' => __DIR__ . '/../..' . '/app/Console/Commands/Vacancies/RunParseCommand.php',
         'App\\Console\\Kernel' => __DIR__ . '/../..' . '/app/Console/Kernel.php',
         'App\\Exceptions\\Handler' => __DIR__ . '/../..' . '/app/Exceptions/Handler.php',
+        'App\\Http\\Controllers\\Areas\\RunParseController' => __DIR__ . '/../..' . '/app/Http/Controllers/Areas/RunParseController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
         'App\\Http\\Controllers\\Employers\\IndexController' => __DIR__ . '/../..' . '/app/Http/Controllers/Employers/IndexController.php',
+        'App\\Http\\Controllers\\Employers\\RunUpdateLogoPathController' => __DIR__ . '/../..' . '/app/Http/Controllers/Employers/RunUpdateLogoPathController.php',
         'App\\Http\\Controllers\\Employers\\ShowController' => __DIR__ . '/../..' . '/app/Http/Controllers/Employers/ShowController.php',
         'App\\Http\\Controllers\\Employers\\StoreController' => __DIR__ . '/../..' . '/app/Http/Controllers/Employers/StoreController.php',
         'App\\Http\\Controllers\\Vacancies\\IndexController' => __DIR__ . '/../..' . '/app/Http/Controllers/Vacancies/IndexController.php',
+        'App\\Http\\Controllers\\Vacancies\\RunHtmlParseController' => __DIR__ . '/../..' . '/app/Http/Controllers/Vacancies/RunHtmlParseController.php',
         'App\\Http\\Controllers\\Vacancies\\RunParseController' => __DIR__ . '/../..' . '/app/Http/Controllers/Vacancies/RunParseController.php',
         'App\\Http\\Controllers\\Vacancies\\ShowController' => __DIR__ . '/../..' . '/app/Http/Controllers/Vacancies/ShowController.php',
         'App\\Http\\Controllers\\Vacancies\\StoreController' => __DIR__ . '/../..' . '/app/Http/Controllers/Vacancies/StoreController.php',
@@ -562,6 +577,7 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
         'App\\Http\\Middleware\\ValidateSignature' => __DIR__ . '/../..' . '/app/Http/Middleware/ValidateSignature.php',
         'App\\Http\\Middleware\\VerifyCsrfToken' => __DIR__ . '/../..' . '/app/Http/Middleware/VerifyCsrfToken.php',
         'App\\Mail\\Notify' => __DIR__ . '/../..' . '/app/Mail/Notify.php',
+        'App\\Models\\Area' => __DIR__ . '/../..' . '/app/Models/Area.php',
         'App\\Models\\Counter' => __DIR__ . '/../..' . '/app/Models/Counter.php',
         'App\\Models\\Employer' => __DIR__ . '/../..' . '/app/Models/Employer.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
@@ -3274,6 +3290,26 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
         'League\\MimeTypeDetection\\GeneratedExtensionToMimeTypeMap' => __DIR__ . '/..' . '/league/mime-type-detection/src/GeneratedExtensionToMimeTypeMap.php',
         'League\\MimeTypeDetection\\MimeTypeDetector' => __DIR__ . '/..' . '/league/mime-type-detection/src/MimeTypeDetector.php',
         'League\\MimeTypeDetection\\OverridingExtensionToMimeTypeMap' => __DIR__ . '/..' . '/league/mime-type-detection/src/OverridingExtensionToMimeTypeMap.php',
+        'Masterminds\\HTML5' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5.php',
+        'Masterminds\\HTML5\\Elements' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Elements.php',
+        'Masterminds\\HTML5\\Entities' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Entities.php',
+        'Masterminds\\HTML5\\Exception' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Exception.php',
+        'Masterminds\\HTML5\\InstructionProcessor' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/InstructionProcessor.php',
+        'Masterminds\\HTML5\\Parser\\CharacterReference' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/CharacterReference.php',
+        'Masterminds\\HTML5\\Parser\\DOMTreeBuilder' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/DOMTreeBuilder.php',
+        'Masterminds\\HTML5\\Parser\\EventHandler' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/EventHandler.php',
+        'Masterminds\\HTML5\\Parser\\FileInputStream' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/FileInputStream.php',
+        'Masterminds\\HTML5\\Parser\\InputStream' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/InputStream.php',
+        'Masterminds\\HTML5\\Parser\\ParseError' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/ParseError.php',
+        'Masterminds\\HTML5\\Parser\\Scanner' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/Scanner.php',
+        'Masterminds\\HTML5\\Parser\\StringInputStream' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/StringInputStream.php',
+        'Masterminds\\HTML5\\Parser\\Tokenizer' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/Tokenizer.php',
+        'Masterminds\\HTML5\\Parser\\TreeBuildingRules' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/TreeBuildingRules.php',
+        'Masterminds\\HTML5\\Parser\\UTF8Utils' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Parser/UTF8Utils.php',
+        'Masterminds\\HTML5\\Serializer\\HTML5Entities' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Serializer/HTML5Entities.php',
+        'Masterminds\\HTML5\\Serializer\\OutputRules' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Serializer/OutputRules.php',
+        'Masterminds\\HTML5\\Serializer\\RulesInterface' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Serializer/RulesInterface.php',
+        'Masterminds\\HTML5\\Serializer\\Traverser' => __DIR__ . '/..' . '/masterminds/html5/src/HTML5/Serializer/Traverser.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegration' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegration.php',
         'Mockery\\Adapter\\Phpunit\\MockeryPHPUnitIntegrationAssertPostConditions' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryPHPUnitIntegrationAssertPostConditions.php',
         'Mockery\\Adapter\\Phpunit\\MockeryTestCase' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery/Adapter/Phpunit/MockeryTestCase.php',
@@ -5781,6 +5817,25 @@ class ComposerStaticInita19d320e7fea0915a134e4460a9ac266
         'Symfony\\Component\\CssSelector\\XPath\\Translator' => __DIR__ . '/..' . '/symfony/css-selector/XPath/Translator.php',
         'Symfony\\Component\\CssSelector\\XPath\\TranslatorInterface' => __DIR__ . '/..' . '/symfony/css-selector/XPath/TranslatorInterface.php',
         'Symfony\\Component\\CssSelector\\XPath\\XPathExpr' => __DIR__ . '/..' . '/symfony/css-selector/XPath/XPathExpr.php',
+        'Symfony\\Component\\DomCrawler\\AbstractUriElement' => __DIR__ . '/..' . '/symfony/dom-crawler/AbstractUriElement.php',
+        'Symfony\\Component\\DomCrawler\\Crawler' => __DIR__ . '/..' . '/symfony/dom-crawler/Crawler.php',
+        'Symfony\\Component\\DomCrawler\\Field\\ChoiceFormField' => __DIR__ . '/..' . '/symfony/dom-crawler/Field/ChoiceFormField.php',
+        'Symfony\\Component\\DomCrawler\\Field\\FileFormField' => __DIR__ . '/..' . '/symfony/dom-crawler/Field/FileFormField.php',
+        'Symfony\\Component\\DomCrawler\\Field\\FormField' => __DIR__ . '/..' . '/symfony/dom-crawler/Field/FormField.php',
+        'Symfony\\Component\\DomCrawler\\Field\\InputFormField' => __DIR__ . '/..' . '/symfony/dom-crawler/Field/InputFormField.php',
+        'Symfony\\Component\\DomCrawler\\Field\\TextareaFormField' => __DIR__ . '/..' . '/symfony/dom-crawler/Field/TextareaFormField.php',
+        'Symfony\\Component\\DomCrawler\\Form' => __DIR__ . '/..' . '/symfony/dom-crawler/Form.php',
+        'Symfony\\Component\\DomCrawler\\FormFieldRegistry' => __DIR__ . '/..' . '/symfony/dom-crawler/FormFieldRegistry.php',
+        'Symfony\\Component\\DomCrawler\\Image' => __DIR__ . '/..' . '/symfony/dom-crawler/Image.php',
+        'Symfony\\Component\\DomCrawler\\Link' => __DIR__ . '/..' . '/symfony/dom-crawler/Link.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerAnySelectorTextContains' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerAnySelectorTextContains.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerAnySelectorTextSame' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerAnySelectorTextSame.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerSelectorAttributeValueSame' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerSelectorAttributeValueSame.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerSelectorCount' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerSelectorCount.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerSelectorExists' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerSelectorExists.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerSelectorTextContains' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerSelectorTextContains.php',
+        'Symfony\\Component\\DomCrawler\\Test\\Constraint\\CrawlerSelectorTextSame' => __DIR__ . '/..' . '/symfony/dom-crawler/Test/Constraint/CrawlerSelectorTextSame.php',
+        'Symfony\\Component\\DomCrawler\\UriResolver' => __DIR__ . '/..' . '/symfony/dom-crawler/UriResolver.php',
         'Symfony\\Component\\ErrorHandler\\BufferingLogger' => __DIR__ . '/..' . '/symfony/error-handler/BufferingLogger.php',
         'Symfony\\Component\\ErrorHandler\\Debug' => __DIR__ . '/..' . '/symfony/error-handler/Debug.php',
         'Symfony\\Component\\ErrorHandler\\DebugClassLoader' => __DIR__ . '/..' . '/symfony/error-handler/DebugClassLoader.php',
