@@ -128,7 +128,7 @@
                             v-if="hasFacet('archived')"
                             v-model="selectedFilters.archived"
                             :options="filterOptions.archived"
-                            :label-map="{ 1: 'Да' }"
+                            :label-map="{ 0: 'Нет', 1: 'Да' }"
                             null-label="Нет"
                             placeholder="В архиве"
                             @change="applyFilters"
