@@ -68,7 +68,7 @@ class IndexControllerElastic extends Controller
 
             // * Сортировка:
             'sort' => 'array|min:1',
-            'sort.*.field' => 'required_with:sort|string|in:id,publishedAt,name',
+            'sort.*.field' => 'required_with:sort|string|in:id,name,salaryFrom,salaryTo,publishedAt',
             'sort.*.order' => 'string|in:asc,desc',
         ]);
         // Ошибки валидации
@@ -99,6 +99,8 @@ class IndexControllerElastic extends Controller
             'id' => 'id',
             'publishedAt' => 'published_at',
             'name' => 'name.keyword',
+            'salaryFrom' => 'salary_from',
+            'salaryTo' => 'salary_to',
         ];
         $hasIdSort = false;
         foreach ($validated['sort'] ?? [] as $value) {

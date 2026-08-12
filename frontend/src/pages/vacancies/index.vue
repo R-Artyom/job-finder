@@ -35,10 +35,18 @@
         <table class="min-w-full border border-gray-400 border-collapse text-sm">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="border border-gray-400 px-1 py-2 w-16">№</th>
+                    <th class="border border-gray-400 px-1 py-2 w-16">
+                        <span class="flex items-center justify-center gap-1 cursor-pointer select-none" @click="toggleSort('id')">
+                            №
+                            <span class="text-orange-700 font-bold text-xs text-center">{{ sortIconId }}</span>
+                        </span>
+                    </th>
                     <th class="border border-gray-400 px-1 py-2 w-70">
                         <div class="flex flex-col gap-1">
-                            <span>Название</span>
+                            <span class="cursor-pointer select-none items-center gap-1" @click="toggleSort('name')">
+                                Название
+                                <span class="text-orange-700 font-bold text-xs text-center">{{ sortIconName }}</span>
+                            </span>
                             <input
                                 type="text"
                                 v-model="nameFilter"
@@ -92,8 +100,18 @@
                         />
                     </th>
                     <th class="border border-gray-400 px-1 py-2 w-72">Описание</th>
-                    <th class="border border-gray-400 px-1 py-2 w-18">ЗП от</th>
-                    <th class="border border-gray-400 px-1 py-2 w-18">ЗП до</th>
+                    <th class="border border-gray-400 px-1 py-2 w-18">
+                        <span class="flex items-center justify-center gap-1 cursor-pointer select-none" @click="toggleSort('salaryFrom')">
+                            ЗП от
+                            <span class="text-orange-700 font-bold text-xs text-center">{{ sortIconSalaryFrom }}</span>
+                        </span>
+                    </th>
+                    <th class="border border-gray-400 px-1 py-2 w-18">
+                        <span class="flex items-center justify-center gap-1 cursor-pointer select-none" @click="toggleSort('salaryTo')">
+                            ЗП до
+                            <span class="text-orange-700 font-bold text-xs text-center">{{ sortIconSalaryTo }}</span>
+                        </span>
+                    </th>
                     <th class="border border-gray-400 px-1 py-2 w-18">
                         <span>Валюта</span>
                         <FacetDropdown
@@ -118,7 +136,10 @@
                     </th>
                     <th class="border border-gray-400 px-1 py-2 w-32">
                         <div class="flex flex-col gap-1">
-                            <span>Опубликовано</span>
+                        <span class="cursor-pointer select-none items-center gap-1" @click="toggleSort('publishedAt')">
+                            Опубликовано
+                            <span class="text-orange-700 font-bold text-xs text-center">{{ sortIconPublishedAt }}</span>
+                        </span>
                             <div class="flex gap-1">
                                 <input
                                     type="date"
@@ -374,6 +395,13 @@
                 publishedToDate: '',
                 publishedToTime: '23:59',
                 publishedDateError: null,
+                // Сортировка (по умолчанию такая же, как на бэкенде - по id вакансии)
+                sort: [
+                    {
+                        field: 'id',
+                        order: 'desc'
+                    }
+                ]
             }
         },
 
@@ -488,7 +516,8 @@
                                     publishedTo,
                                 ]
                                 : undefined,
-                        }
+                        },
+                        sort: this.sort
                     }
                 })
                 .then(res => {
@@ -733,6 +762,58 @@
                 }
             },
 
+            // Логика переключения сортировки при клике на заголовок колонки таблицы,
+            // реализует одиночную сортировку (только по одному полю), старая сортировка удаляется
+            toggleSort(field) {
+                // Есть ли уже активная сортировка для поля в field массиве this.sort
+                const currentSort = this.sort.find(s => s.field === field);
+                let newOrder;
+
+                // Определение нового направления сортировки
+                if (currentSort) {
+                    // Если для поля field уже есть сортировка, то переключение порядка сортировки на противоположный
+                    newOrder = currentSort.order === 'asc' ? 'desc' : 'asc';
+                } else {
+                    // Если поле не сортировалось, то включение сортировки 'asc' (по возрастанию)
+                    newOrder = 'asc';
+                }
+
+                // Обновление состояния сортировки
+                this.sort = [
+                    {
+                        field,
+                        order: newOrder
+                    }
+                ];
+
+                // Перезагрузка данных (очистка текущего списка вакансий, сброс пагинации (курсор next становится null),
+                // отправка нового запроса на сервер с обновленными параметрами сортировки)
+                this.getVacancies(true);
+            },
+        },
+
+        // Computed-свойства для отображения иконок сортировки
+        computed: {
+            sortIconId() {
+                const s = this.sort.find(s => s.field === 'id');
+                return s ? (s.order === 'asc' ? '↑' : '↓') : '↕';
+            },
+            sortIconName() {
+                const s = this.sort.find(s => s.field === 'name');
+                return s ? (s.order === 'asc' ? '↑' : '↓') : '↕';
+            },
+            sortIconSalaryFrom() {
+                const s = this.sort.find(s => s.field === 'salaryFrom');
+                return s ? (s.order === 'asc' ? '↑' : '↓') : '↕';
+            },
+            sortIconSalaryTo() {
+                const s = this.sort.find(s => s.field === 'salaryTo');
+                return s ? (s.order === 'asc' ? '↑' : '↓') : '↕';
+            },
+            sortIconPublishedAt() {
+                const s = this.sort.find(s => s.field === 'publishedAt');
+                return s ? (s.order === 'asc' ? '↑' : '↓') : '↕';
+            }
         }
     }
 </script>
