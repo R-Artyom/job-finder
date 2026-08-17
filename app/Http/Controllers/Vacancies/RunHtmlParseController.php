@@ -377,7 +377,7 @@ class RunHtmlParseController extends Controller
                 'salary' => [
                     'from' => $vacancyView['compensation']['from'] ?? null,
                     'to' => $vacancyView['compensation']['to'] ?? null,
-                    'currency' => $vacancyView['compensation']['currency'] ?? null,
+                    'currency' => $vacancyView['compensation']['currencyCode'] ?? null,
                 ],
                 'archived' => isset($vacancyView['status']['archived']) ? 1 : null,
                 'published_at' => $vacancyView['publicationDate'] ?? null,
