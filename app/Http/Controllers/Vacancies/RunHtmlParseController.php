@@ -191,8 +191,49 @@ class RunHtmlParseController extends Controller
                                 $vacancyData['employer']['id'] = null;
                             }
 
+                            // Если ответ есть, но данные о вакансии отсутствуют
+                            if (!isset($vacancyData['id'])) {
+                                // Проверяем, не перенаправили ли нас
+                                $html = $response->body();
+                                $crawler = new Crawler($html);
+                                $crawlerText = $crawler->text();
+
+                                // * JSON объект "request"
+                                $pos = strpos($crawlerText, '"request"');
+                                $requestJsonObject = $this->extractJsonObject($crawlerText, $pos);
+                                $requestData = json_decode($requestJsonObject, true);
+
+                                // * JSON объект "pageMetaData"
+                                $pos = strpos($crawlerText, '"pageMetaData"');
+                                $pageMetaDataJsonObject = $this->extractJsonObject($crawlerText, $pos);
+                                $pageMetaData = json_decode($pageMetaDataJsonObject, true);
+
+                                // Контекст для лога
+                                $this->loggerContext = [
+                                    'vacancyId' => $vacancyId,
+                                    'interval' => microtime(true) - $fixedTime,
+                                    'status' => $response->status(),
+                                    'requestData' => $requestData,
+                                    'pageMetaData' => $pageMetaData,
+                                ];
+
+                                // Если тип страницы "Рекламная статья"
+                                if ($requestData['luxPageName'] === 'Article') {
+                                    logger()->info('Перенаправление на статью', $this->loggerContext);
+                                    $notifications[] = [
+                                        '🟡 Отчёт',
+                                        "Вакансия {$vacancyId}",
+                                        "Перенаправление на статью {$requestData['origin']}{$requestData['url']}",
+                                        $pageMetaData['description'],
+                                    ];
+                                // Если тип страницы ещё неизвестен
+                                } else {
+                                    throw new \Exception('Vacancy HTTP error: в ответе отсутствует id вакансии');
+                                }
                             // Запись данных о вакансии
-                            (new StoreController)($vacancyData);
+                            } else {
+                                (new StoreController)($vacancyData);
+                            }
                         // 404 - Вакансия отсутствует, увеличиваем счетчик и идём дальше
                         } elseif ($response->status() !== 404) {
                             // Контекст для лога
@@ -207,7 +248,7 @@ class RunHtmlParseController extends Controller
                             if ($response->status() !== 403 && $response->status() !== 502) {
                                 $counter->status = 'error';
                             }
-                            throw new \Exception('Vacancy API error ' . $response->status());
+                            throw new \Exception('Vacancy HTTP error ' . $response->status());
                         }
 
                         // Инкремент счетчика для следующей итерации
