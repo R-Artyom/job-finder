@@ -398,6 +398,7 @@ class RunHtmlParseController extends Controller
         $pos = strpos($crawlerText, '"vacancyView"');
         $vacancyViewJsonObject = $this->extractJsonObject($crawlerText, $pos);
         $vacancyView = json_decode($vacancyViewJsonObject, true);
+        $vacancyView = $vacancyView['vacancyFull']['vacancy'] ?? null;
 
         // * JSON объект "shortVacancy"
         $pos = strpos($crawlerText, '"shortVacancy"');
@@ -409,7 +410,7 @@ class RunHtmlParseController extends Controller
                 'id' => $vacancyView['vacancyId'],
                 'name' => $vacancyView['name'],
                 'area' => [
-                    'id' => $vacancyView['area']['@id'] ?? null,
+                    'id' => $vacancyView['area']['id'] ?? null,
                 ],
                 'description' => $vacancyView['description'] ?? '',
                 'employer' => [
@@ -420,8 +421,8 @@ class RunHtmlParseController extends Controller
                     'to' => $vacancyView['compensation']['to'] ?? null,
                     'currency' => $vacancyView['compensation']['currencyCode'] ?? null,
                 ],
-                'archived' => isset($vacancyView['status']['archived']) ? 1 : null,
-                'published_at' => $vacancyView['publicationDate'] ?? null,
+                'archived' => (isset($vacancyView['status']['archived']) && !empty($vacancyView['status']['archived'])) ? 1 : null,
+                'published_at' => $vacancyView['publicationTimeIso'] ?? null,
                 'initial_created_at' => $shortVacancy['creationTime'] ?? null,
             ];
             return $vacancyData;
