@@ -198,6 +198,8 @@ class RunHtmlParseController extends Controller
                                 $crawler = new Crawler($html);
                                 $crawlerText = $crawler->text();
 
+//file_put_contents('crawlerText137396376.txt', $crawlerText);
+
                                 // * JSON объект "request"
                                 $pos = strpos($crawlerText, '"request"');
                                 $requestJsonObject = $this->extractJsonObject($crawlerText, $pos);
@@ -207,6 +209,13 @@ class RunHtmlParseController extends Controller
                                 $pos = strpos($crawlerText, '"pageMetaData"');
                                 $pageMetaDataJsonObject = $this->extractJsonObject($crawlerText, $pos);
                                 $pageMetaData = json_decode($pageMetaDataJsonObject, true);
+
+                                // * JSON объект "utm_redirect_vacancy_id"
+                                $pos = strpos($crawlerText, '"utm_redirect_vacancy_id"');
+                                $utmRedirectVacancyIdJsonObject = $this->extractJsonObject($crawlerText, $pos);
+
+//file_put_contents('requestJsonObject137396376.txt', $requestJsonObject);
+//file_put_contents('pageMetaDataJsonObject137396376.txt', $pageMetaDataJsonObject);
 
                                 // Контекст для лога
                                 $this->loggerContext = [
@@ -218,7 +227,7 @@ class RunHtmlParseController extends Controller
                                 ];
 
                                 // Если тип страницы "Рекламная статья"
-                                if ($requestData['luxPageName'] === 'Article') {
+                                if (isset($requestData['luxPageName']) && $requestData['luxPageName'] === 'Article') {
                                     logger()->info('Перенаправление на статью', $this->loggerContext);
                                     $notifications[] = [
                                         '🟡 Отчёт',
@@ -227,6 +236,21 @@ class RunHtmlParseController extends Controller
                                         $pageMetaData['description'],
                                     ];
                                 // Если тип страницы ещё неизвестен
+                                } elseif (isset($requestData['luxPageName'])) {
+                                    logger()->info('Перенаправление на неизвестную статью hh.ru', $this->loggerContext);
+                                    $notifications[] = [
+                                        '🟡 Отчёт',
+                                        "Вакансия {$vacancyId}",
+                                        "Перенаправление на неизвестную статью hh.ru{$requestData['url']}",
+                                    ];
+                                // Если сложно определить (напр 137396376)
+                                } elseif (isset($utmRedirectVacancyIdJsonObject)) {
+                                    logger()->info('Перенаправление на сложноопределяемый тип страницы hh.ru', $this->loggerContext);
+                                    $notifications[] = [
+                                        '🟡 Отчёт',
+                                        "Вакансия {$vacancyId}",
+                                        "Перенаправление на сложноопределяемый тип страницы hh.ru{$requestData['url']}",
+                                    ];
                                 } else {
                                     throw new \Exception('Vacancy HTTP error: в ответе отсутствует id вакансии');
                                 }
@@ -394,6 +418,8 @@ class RunHtmlParseController extends Controller
         $crawler = new Crawler($html);
         $crawlerText = $crawler->text();
 
+//file_put_contents('crawlerText137401479.txt', $crawlerText);
+
         // * JSON объект "vacancyView"
         $pos = strpos($crawlerText, '"vacancyView"');
         $vacancyViewJsonObject = $this->extractJsonObject($crawlerText, $pos);
@@ -406,6 +432,11 @@ class RunHtmlParseController extends Controller
         $shortVacancy = json_decode($shortVacancyJsonObject, true);
 
         if ($vacancyView && $shortVacancy) {
+
+//file_put_contents('vacancy2630611.txt', $vacancyViewJsonObject);
+//file_put_contents('shortVacancy2630611.txt', $shortVacancyJsonObject);
+//dd($vacancyView);
+
             $vacancyData = [
                 'id' => $vacancyView['vacancyId'],
                 'name' => $vacancyView['name'],
