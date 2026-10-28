@@ -283,10 +283,33 @@ class RunHtmlParseController extends Controller
                                         throw new \Exception('Vacancy HTTP error: в ответе отсутствует id вакансии');
                                     }
                                 }
-                            // Запись данных о вакансии
-                            } else {
-                                (new StoreController)($vacancyData);
+
+                                // * Поле "id"
+                                $vacancyData['id'] = $vacancyId;
+
+                                // * Поле "url"
+                                $vacancyData['url'] = $finalUrlString;
+
+                            // Если "id вакансии ответа" не совпадает с "id вакансии запроса" - т.е. редирект на старую вакансию, например
+                            // https://hh.ru/vacancy/138571728 перенаправляется нв https://hh.ru/vacancy/109773594?utm_redirect_vacancy_id=138571728
+                            } else if ($vacancyData['id'] !== $vacancyId) {
+                                // * Поле "parent_id"
+                                $vacancyData['parent_id'] = $vacancyData['id'];
+
+                                // * Поле "id"
+                                // Замена id вакансии на тот, что из запроса
+                                $vacancyData['id'] = $vacancyId;
+
+                                // * Поле "url"
+                                // Финальный URL после всех редиректов
+                                $finalUrl = $response->effectiveUri();
+                                // Финальный URL в виде строки, а не объекта GuzzleHttp\Psr7\Uri^
+                                $vacancyData['url'] = (string) $finalUrl;
                             }
+
+                            // Запись данных о вакансии
+                            (new StoreController)($vacancyData);
+
                         // 404 - Вакансия отсутствует, увеличиваем счетчик и идём дальше
                         } elseif ($response->status() !== 404) {
                             // Контекст для лога
