@@ -16,10 +16,6 @@ class StoreController extends Controller
         if (!empty($data['id'])) {
             $vacancy->id = $data['id'];
         }
-        // Родитель вакансии
-        if (!empty($data['parent_id'])) {
-            $vacancy->parent_id = $data['parent_id'];
-        }
         // Название вакансии
         if (!empty($data['name'])) {
             $vacancy->name = $data['name'];
@@ -49,10 +45,6 @@ class StoreController extends Controller
         // Признак "В архиве"
         if (!empty($data['archived'])) {
             $vacancy->archived = $data['archived'];
-        }
-        // Ссылка на вакансию
-        if (!empty($data['url'])) {
-            $vacancy->url = $data['url'];
         }
         // Дата публикации
         if (!empty($data['published_at'])) {
