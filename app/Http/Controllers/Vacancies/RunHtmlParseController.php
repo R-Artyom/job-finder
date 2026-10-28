@@ -193,66 +193,95 @@ class RunHtmlParseController extends Controller
 
                             // Если ответ есть, но данные о вакансии отсутствуют
                             if (!isset($vacancyData['id'])) {
-                                // Проверяем, не перенаправили ли нас
-                                $html = $response->body();
-                                $crawler = new Crawler($html);
-                                $crawlerText = $crawler->text();
+                                // * Проверяем, не перенаправили ли нас
+                                // Финальный URL после всех редиректов
+                                $finalUrl = $response->effectiveUri();
+                                // Финальный домен после всех редиректов
+                                $finalHost = parse_url($finalUrl, PHP_URL_HOST);
+                                // Финальный URL в виде строки, а не объекта GuzzleHttp\Psr7\Uri^
+                                $finalUrlString = (string) $finalUrl;
+                                // Оригинальный домен
+                                $originalHost = 'hh.ru';
+
+                                // 1. Если перенаправили на абсолютно другой сайт
+                                if ($this->getBaseDomain($finalHost) !== $originalHost) {
+                                    // Контекст для лога
+                                    $this->loggerContext = [
+                                        'vacancyId' => $vacancyId,
+                                        'interval' => microtime(true) - $fixedTime,
+                                        'status' => $response->status(),
+                                        'fromHost' => $originalHost,
+                                        'toHost' => $finalHost,
+                                        'toUrl' => $finalUrl,
+                                    ];
+                                    logger()->info("Перенаправление на {$finalHost}", $this->loggerContext);
+                                    $notifications[] = [
+                                        '🟡 Отчёт',
+                                        "Вакансия {$vacancyId}",
+                                        "Перенаправление на {$finalUrlString}",
+                                    ];
+                                // 2. Если перенаправили на тот же сайт ('hh.ru')
+                                } else {
+                                    $html = $response->body();
+                                    $crawler = new Crawler($html);
+                                    $crawlerText = $crawler->text();
 
 //file_put_contents('crawlerText137396376.txt', $crawlerText);
 
-                                // * JSON объект "request"
-                                $pos = strpos($crawlerText, '"request"');
-                                $requestJsonObject = $this->extractJsonObject($crawlerText, $pos);
-                                $requestData = json_decode($requestJsonObject, true);
+                                    // * JSON объект "request"
+                                    $pos = strpos($crawlerText, '"request"');
+                                    $requestJsonObject = $this->extractJsonObject($crawlerText, $pos);
+                                    $requestData = json_decode($requestJsonObject, true);
 
-                                // * JSON объект "pageMetaData"
-                                $pos = strpos($crawlerText, '"pageMetaData"');
-                                $pageMetaDataJsonObject = $this->extractJsonObject($crawlerText, $pos);
-                                $pageMetaData = json_decode($pageMetaDataJsonObject, true);
+                                    // * JSON объект "pageMetaData"
+                                    $pos = strpos($crawlerText, '"pageMetaData"');
+                                    $pageMetaDataJsonObject = $this->extractJsonObject($crawlerText, $pos);
+                                    $pageMetaData = json_decode($pageMetaDataJsonObject, true);
 
-                                // * JSON объект "utm_redirect_vacancy_id"
-                                $pos = strpos($crawlerText, '"utm_redirect_vacancy_id"');
-                                $utmRedirectVacancyIdJsonObject = $this->extractJsonObject($crawlerText, $pos);
+                                    // * JSON объект "utm_redirect_vacancy_id"
+                                    $pos = strpos($crawlerText, '"utm_redirect_vacancy_id"');
+                                    $utmRedirectVacancyIdJsonObject = $this->extractJsonObject($crawlerText, $pos);
 
 //file_put_contents('requestJsonObject137396376.txt', $requestJsonObject);
 //file_put_contents('pageMetaDataJsonObject137396376.txt', $pageMetaDataJsonObject);
 
-                                // Контекст для лога
-                                $this->loggerContext = [
-                                    'vacancyId' => $vacancyId,
-                                    'interval' => microtime(true) - $fixedTime,
-                                    'status' => $response->status(),
-                                    'requestData' => $requestData,
-                                    'pageMetaData' => $pageMetaData,
-                                ];
+                                    // Контекст для лога
+                                    $this->loggerContext = [
+                                        'vacancyId' => $vacancyId,
+                                        'interval' => microtime(true) - $fixedTime,
+                                        'status' => $response->status(),
+                                        'requestData' => $requestData,
+                                        'pageMetaData' => $pageMetaData,
+                                    ];
 
-                                // Если тип страницы "Рекламная статья"
-                                if (isset($requestData['luxPageName']) && $requestData['luxPageName'] === 'Article') {
-                                    logger()->info('Перенаправление на статью', $this->loggerContext);
-                                    $notifications[] = [
-                                        '🟡 Отчёт',
-                                        "Вакансия {$vacancyId}",
-                                        "Перенаправление на статью {$requestData['origin']}{$requestData['url']}",
-                                        $pageMetaData['description'],
-                                    ];
-                                // Если тип страницы ещё неизвестен
-                                } elseif (isset($requestData['luxPageName'])) {
-                                    logger()->info('Перенаправление на неизвестную статью hh.ru', $this->loggerContext);
-                                    $notifications[] = [
-                                        '🟡 Отчёт',
-                                        "Вакансия {$vacancyId}",
-                                        "Перенаправление на неизвестную статью hh.ru{$requestData['url']}",
-                                    ];
-                                // Если сложно определить (напр 137396376)
-                                } elseif (isset($utmRedirectVacancyIdJsonObject)) {
-                                    logger()->info('Перенаправление на сложноопределяемый тип страницы hh.ru', $this->loggerContext);
-                                    $notifications[] = [
-                                        '🟡 Отчёт',
-                                        "Вакансия {$vacancyId}",
-                                        "Перенаправление на сложноопределяемый тип страницы hh.ru{$requestData['url']}",
-                                    ];
-                                } else {
-                                    throw new \Exception('Vacancy HTTP error: в ответе отсутствует id вакансии');
+                                    // Если тип страницы "Рекламная статья"
+                                    if (isset($requestData['luxPageName']) && $requestData['luxPageName'] === 'Article') {
+                                        logger()->info('Перенаправление на статью', $this->loggerContext);
+                                        $notifications[] = [
+                                            '🟡 Отчёт',
+                                            "Вакансия {$vacancyId}",
+                                            "Перенаправление на статью {$requestData['origin']}{$requestData['url']}",
+                                            $pageMetaData['description'],
+                                        ];
+                                    // Если тип страницы ещё неизвестен
+                                    } elseif (isset($requestData['luxPageName'])) {
+                                        logger()->info("Перенаправление на неизвестную статью {$originalHost}", $this->loggerContext);
+                                        $notifications[] = [
+                                            '🟡 Отчёт',
+                                            "Вакансия {$vacancyId}",
+                                            "Перенаправление на неизвестную статью {$originalHost}{$requestData['url']}",
+                                        ];
+                                    // Если сложно определить (напр 137396376)
+                                    } elseif (isset($utmRedirectVacancyIdJsonObject)) {
+                                        logger()->info("Перенаправление на сложноопределяемый тип страницы {$originalHost}", $this->loggerContext);
+                                        $notifications[] = [
+                                            '🟡 Отчёт',
+                                            "Вакансия {$vacancyId}",
+                                            "Перенаправление на сложноопределяемый тип страницы {$originalHost}{$requestData['url']}",
+                                        ];
+                                    } else {
+                                        throw new \Exception('Vacancy HTTP error: в ответе отсутствует id вакансии');
+                                    }
                                 }
                             // Запись данных о вакансии
                             } else {
@@ -529,5 +558,30 @@ class RunHtmlParseController extends Controller
         }
 
         return null;
+    }
+
+    /**
+     * Извлекает базовый домен (без поддомена)
+     * hh.ru → hh.ru
+     * novosibirsk.hh.ru → hh.ru
+     * www.hh.ru → hh.ru
+     * trudvsem.ru → trudvsem.ru
+     */
+    private function getBaseDomain(string $host): string
+    {
+        $parts = explode('.', $host);
+
+        // Для .ru, .com, .by и т.п. — берём 2 последние части
+        // Для .co.uk, .com.kz — нужно расширить логику
+        $knownTwoLevelTlds = ['co.uk', 'com.kz', 'com.by', 'co.jp', 'com.au', 'co.in'];
+
+        $lastTwo = implode('.', array_slice($parts, -2));
+        $lastThree = implode('.', array_slice($parts, -3));
+
+        if (in_array($lastTwo, $knownTwoLevelTlds)) {
+            return $lastThree;
+        }
+
+        return $lastTwo;
     }
 }
