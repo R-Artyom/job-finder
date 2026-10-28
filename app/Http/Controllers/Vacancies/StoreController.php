@@ -16,6 +16,10 @@ class StoreController extends Controller
         if (!empty($data['id'])) {
             $vacancy->id = $data['id'];
         }
+        // Родитель вакансии
+        if (!empty($data['parent_id'])) {
+            $vacancy->parent_id = $data['parent_id'];
+        }
         // Название вакансии
         if (!empty($data['name'])) {
             $vacancy->name = $data['name'];
@@ -46,6 +50,10 @@ class StoreController extends Controller
         if (!empty($data['archived'])) {
             $vacancy->archived = $data['archived'];
         }
+        // Ссылка на вакансию
+        if (!empty($data['url'])) {
+            $vacancy->url = $data['url'];
+        }
         // Дата публикации
         if (!empty($data['published_at'])) {
             $vacancy->published_at = Carbon::parse($data['published_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
@@ -53,6 +61,8 @@ class StoreController extends Controller
         // Оригинальная дата создания вакансии
         if (!empty($data['initial_created_at'])) {
             $vacancy->created_at = Carbon::parse($data['initial_created_at'])->setTimezone('UTC')->format('Y-m-d H:i:s');
+        } else {
+            $vacancy->created_at = null;
         }
         // Дата создания записи в БД
         if (!empty($data['updated_at'])) {
