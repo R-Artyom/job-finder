@@ -45,7 +45,7 @@ class RunHtmlParseController extends Controller
             ];
 
             try {
-                // Ограничение времени на установку соединения до 2 секунды и общего времени соединения до 3 секунд
+                // Ограничение времени на установку соединения до 2 секунд и общего времени соединения до 3 секунд
                 $response = Http::withHeaders([
                     'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Accept' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -62,15 +62,26 @@ class RunHtmlParseController extends Controller
                     $html = $response->body();
                     $crawler = new Crawler($html);
                     $crawlerText = $crawler->text();
+//file_put_contents('limit_crawler.txt', $crawlerText);
 
-                    // * JSON объект массива "vacancies" (первый элемент)
+                    // * Получить JSON-массив "vacancies" (примерно 53 элемента)
                     $pos = strpos($crawlerText, '"vacancies"');
-                    $vacancyJsonObject = $this->extractJsonObject($crawlerText, $pos);
-                    $vacancy = json_decode($vacancyJsonObject, true);
+                    $vacanciesJsonArray = $this->extractJsonArray($crawlerText, $pos);
+//file_put_contents('limit_vacanciesJsonArray.txt', $vacanciesJsonArray);
+
+                    // Преобразовать результат в ассоциативный массив
+                    $vacancies = json_decode($vacanciesJsonArray, true);
+
+                    // Максимальный id вакансии из всех полученных
+                    // 1) преобразовать в коллекцию,
+                    // 2) отсортировать по 'vacancyId' по убыванию,
+                    // 3) сбросить индексы,
+                    // 4) взять 'vacancyId' у самого первого элемента.
+                    $maxVacancyId = collect($vacancies)->sortByDesc('vacancyId')->values()[0]['vacancyId'];
 
                     // Новое значение счетчика
-                    if (isset($vacancy['vacancyId']) && $counter->limit < $vacancy['vacancyId']) {
-                        $counter->limit = $vacancy['vacancyId'];
+                    if (isset($maxVacancyId) && $counter->limit < $maxVacancyId) {
+                        $counter->limit = $maxVacancyId;
                         $counter->save();
                     }
                 } else {
@@ -428,7 +439,7 @@ class RunHtmlParseController extends Controller
     /**
      * Извлечь JSON объект, начиная с указанной позиции
      *
-     * @param string $text Текст, из которого необходимо извлечт объект
+     * @param string $text Текст, из которого необходимо извлечь объект
      * @param int|null $startPos Позиция начала
      * @return string|null
      */
@@ -455,6 +466,52 @@ class RunHtmlParseController extends Controller
                 }
                 $depth++;
             } elseif ($char === '}') {
+                $depth--;
+                if ($started && $depth === 0) {
+                    // Нашли конец объекта - глубина стала 0
+                    $endPos = $i + 1;
+                    break;
+                }
+            }
+        }
+
+        if ($started && $endPos > $startPos) {
+            return substr($text, $startPos, $endPos - $startPos);
+        }
+
+        return null;
+    }
+
+    /**
+     * Извлечь JSON-массив, начиная с указанной позиции
+     *
+     * @param string $text Текст, из которого необходимо извлечь JSON-массив
+     * @param int|null $startPos Позиция начала
+     * @return string|null
+     */
+    function extractJsonArray(string $text, ?int $startPos): ?string
+    {
+        // Количество скобок
+        $depth = 0;
+        $started = false;
+        $endPos = $startPos;
+
+        if (!$startPos) {
+            return null;
+        }
+
+        for ($i = $startPos; $i < strlen($text); $i++) {
+            $char = $text[$i];
+
+            if ($char === '[') {
+                if (!$started) {
+                    // Нашли начало объекта
+                    $started = true;
+                    // Возвращаемся назад, чтобы захватить ключ "vacancyView"
+                    $startPos = $i;
+                }
+                $depth++;
+            } elseif ($char === ']') {
                 $depth--;
                 if ($started && $depth === 0) {
                     // Нашли конец объекта - глубина стала 0
