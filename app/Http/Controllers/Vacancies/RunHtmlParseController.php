@@ -519,7 +519,7 @@ class RunHtmlParseController extends Controller
                 ],
                 'archived' => (isset($vacancyView['status']['archived']) && !empty($vacancyView['status']['archived'])) ? 1 : null,
                 'published_at' => $vacancyView['publicationTimeIso'] ?? null,
-                'initial_created_at' => $shortVacancy['creationTime'] ?? null,
+                'initial_created_at' => $shortVacancy['creationTimeIso'] ?? null,
             ];
             return $vacancyData;
         // Если есть только укророченные данные (нет дорступа, ош. 403)
